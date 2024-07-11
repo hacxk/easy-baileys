@@ -1,0 +1,57 @@
+{
+  "name": "easy-baileys",
+  "version": "1.0.0",
+  "description": "Tired of writing complex code for simple WhatsApp bots? This Node.js module simplifies bot creation, making it accessible to all levels of developers. Harness the power of @whiskeysockets/baileys without the hassle.s ",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hacxk/easy-baileys.git"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "user",
+    "bot",
+    "md",
+    "baileys",
+    "@whiskeysockets",
+    "whatsapp",
+    "bot",
+    "multi-device",
+    "node",
+    "javscript",
+    "user",
+    "bot",
+    "chatbot",
+    "whatsapp-api",
+    "automation",
+    "nodejs",
+    "messaging",
+    "bot-framework",
+    "whatsapp-automation",
+    "whatsapp",
+    "group",
+    "bot",
+    "whatsapp",
+    "business",
+    "bot",
+    "business",
+    "bot"
+  ],
+  "author": "hacxk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hacxk/easy-baileys/issues"
+  },
+  "homepage": "https://github.com/hacxk/easy-baileys#readme",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.5",
+    "jimp": "^0.16.13",
+    "libphonenumber-js": "^1.11.4",
+    "link-preview-js": "^3.0.5",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
