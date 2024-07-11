@@ -1,10 +1,10 @@
 {
   "name": "easy-baileys",
   "version": "1.0.0",
-  "description": "Tired of writing complex code for simple WhatsApp bots? This Node.js module simplifies bot creation, making it accessible to all levels of developers. Harness the power of @whiskeysockets/baileys without the hassle.s ",
+  "description": "Tired of writing complex code for simple WhatsApp bots? This Node.js module simplifies bot creation, making it accessible to all levels of developers. Harness the power of @whiskeysockets/baileys without the hassle.",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -14,7 +14,6 @@
     "whatsapp",
     "bot",
     "user",
-    "bot",
     "md",
     "baileys",
     "@whiskeysockets",
@@ -32,14 +31,8 @@
     "messaging",
     "bot-framework",
     "whatsapp-automation",
-    "whatsapp",
     "group",
-    "bot",
-    "whatsapp",
-    "business",
-    "bot",
-    "business",
-    "bot"
+    "business"
   ],
   "author": "hacxk",
   "license": "MIT",
