@@ -1,6 +1,14 @@
-const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, DisconnectReason } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
 const pino = require('pino');
 const NodeCache = require('node-cache');
+
+// Enhanced logging
+const logger = pino({
+    level: process.env.LOG_LEVEL || 'silent',
+});
+
+// In-memory store for caching
+const store = makeInMemoryStore({ logger });
 
 class WhatsAppClient {
     constructor(customOptions = {}) {
@@ -18,6 +26,15 @@ class WhatsAppClient {
         const { state, saveCreds } = await useMultiFileAuthState(pathAuthFile);
         this.state = state;
 
+        const getMessage = async (key) => {
+            if (store) {
+                const msg = await store.loadMessage(key.remoteJid, key.id);
+                return msg && msg.message ? msg.message : undefined;
+            }
+            // only if store is present
+            return proto.Message.fromObject({});
+        };
+
         try {
             this.sock = await makeWASocket({
                 browser: this.customOptions.browser || ["Ubuntu", "Chrome", "20.0.04"],
@@ -31,15 +48,18 @@ class WhatsAppClient {
                 },
                 markOnlineOnConnect: this.customOptions.markOnlineOnConnect || true,
                 defaultQueryTimeoutMs: undefined,
-                logger: this.logger,
+                logger,
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(state.keys, this.logger),
                 },
                 linkPreviewImageThumbnailWidth: 1980,
                 generateHighQualityLinkPreview: true,
+                getMessage,
                 ...this.customOptions
             });
+
+            store?.bind(this.sock.ev)
 
             this.sock.ev.on('creds.update', saveCreds);
             this.sock.ev.on('connection.update', (update) => {
@@ -103,9 +123,6 @@ class WhatsAppClient {
             throw new Error('Please disable printQRInTerminal before requesting pairing code');
         }
     }
-
-
-
 
     static async create(pathAuthFile, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
