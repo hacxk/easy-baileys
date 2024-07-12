@@ -3,6 +3,8 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/easy-baileys.svg)](https://www.npmjs.com/package/easy-baileys)
+[![baileys](https://img.shields.io/npm/v/baileys?logo=data:image/png;base64,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&label=baileys&color=rgb(0,165,135))](https://github.com/WhiskeySockets/Baileys)
+[![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-raw/hacxk/easy-baileys?logo=circle&logoColor=white)](https://github.com/hacxk/easy-baileys/issues)
 
 **easy-baileys** is a Node.js package designed to streamline WhatsApp connectivity and automate message handling, offering robust flexibility. It leverages the powerful capabilities of [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys).
 
@@ -53,7 +55,51 @@ const customOptions = {
 })();
 ```
 
-### 3. Creating a Client Instance with MultiFile Authentication
+### 3. Creating a Client Instance with MySQL Authentication
+
+```javascript
+const WhatsAppClient = require('easy-baileys');
+
+// Example MySQL configuration
+const mysqlConfig = {
+    session: 'session1', // Required
+    host: 'localhost', // Required
+    port: 3306, // Optional
+    user: 'your_mysql_user', // Optional
+    password: 'your_mysql_password', // Optional
+    database: 'your_database_name', // Optional
+    tableName: 'auth' // Optional
+};
+
+const customOptions = {
+  browser: ["Ubuntu", "Chrome", "20.0.04"],
+  printQRInTerminal: false, // Set to true for QR code in terminal
+  mobile: false,
+};
+
+(async () => {
+  try {
+    // Initialize WhatsAppClient with MySQL authentication
+    const client = await WhatsAppClient.createMySQLAuth(mysqlConfig, customOptions);
+    const sockMySQL = await client.getSocket();
+    const connMySQL = await client.getSocketMsg();
+
+    // Example event listener for incoming messages
+    sockMySQL.ev.on("messages.upsert", async ({ messages }) => {
+      for (const m of messages) {
+        if (m.message?.conversation.toLowerCase() === 'hi') {
+          await connMySQL.reply(sockMongo, m, 'Hello! 👋');
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error initializing WhatsApp client with MySQL authentication:', error.message);
+  }
+})();
+```
+
+### 4. Creating a Client Instance with MultiFile Authentication
 
 ```javascript
 const WhatsAppClient = require('easy-baileys');
@@ -91,7 +137,7 @@ const customOptions = {
 - **MongoDB Authentication Example**: Initializes the `WhatsAppClient` instance using MongoDB credentials and sets up event listeners to respond to messages.
 - **MultiFile Authentication Example**: Initializes the `WhatsAppClient` instance using authentication files stored locally and handles incoming messages similarly.
 
-### 4. Obtain a pairing code (Optional)
+### 5. Obtain a pairing code (Optional)
 
 ```javascript
 const sock = client.getSocket();

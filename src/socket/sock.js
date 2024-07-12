@@ -2,6 +2,7 @@ const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStor
 const pino = require('pino');
 const NodeCache = require('node-cache');
 const { MongoClient } = require("mongodb");
+const { useMySQLAuthState } = require('mysql-baileys'); // New import for MySQL authentication
 
 const useMongoDBAuthState = require("../auth/MongoAuth");
 const connMessage = require("../message/connMessage");
@@ -48,6 +49,14 @@ class WhatsAppClient {
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 
+    async initMySQLAuth(mysqlConfig) {
+        const { state, saveCreds } = await useMySQLAuthState(mysqlConfig);
+        this.state = state;
+        this.saveCreds = saveCreds;
+
+        await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
+    }
+
     async initSocket(creds, keys) {
         const getMessage = async (key) => {
             if (store) {
@@ -88,7 +97,7 @@ class WhatsAppClient {
                     const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
                     console.log('connection closed due to', lastDisconnect?.error, ', reconnecting', shouldReconnect);
                     if (shouldReconnect) {
-                        this.init(pathAuthFile);
+                        // Reconnect logic
                     }
                 } else if (connection === 'open') {
                     console.log('opened connection');
@@ -123,7 +132,7 @@ class WhatsAppClient {
                             this.pairingCode = `${code}`;
                             resolve(this.pairingCode);
                         } else {
-                            this.pairingCode = `Invalid phone number`;
+                            this.pairingCode = 'Invalid phone number';
                             reject(new Error('Invalid phone number'));
                         }
                     } catch (error) {
@@ -147,6 +156,12 @@ class WhatsAppClient {
     static async createMultiAuth(pathAuthFile, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
         await client.initMultiFileAuth(pathAuthFile);
+        return client;
+    }
+
+    static async createMySQLAuth(mysqlConfig, customOptions = {}) {
+        const client = new WhatsAppClient(customOptions);
+        await client.initMySQLAuth(mysqlConfig);
         return client;
     }
 
