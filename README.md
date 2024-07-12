@@ -38,13 +38,12 @@ const customOptions = {
     // Initialize WhatsAppClient with MongoDB authentication
     const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', customOptions);
     const sockMongo = await clientMongo.getSocket();
-    const connMongo = await clientMongo.getSocketMsg();
 
     // Example event listener for incoming messages
     sockMongo.ev.on("messages.upsert", async ({ messages }) => {
       for (const m of messages) {
         if (m.message?.conversation.toLowerCase() === 'hi') {
-          await connMongo.reply(sockMongo, m, 'Hello! 👋');
+          await sockMongo.reply(m, 'Hello! 👋');
         }
       }
     });
@@ -82,13 +81,12 @@ const customOptions = {
     // Initialize WhatsAppClient with MySQL authentication
     const client = await WhatsAppClient.createMySQLAuth(mysqlConfig, customOptions);
     const sockMySQL = await client.getSocket();
-    const connMySQL = await client.getSocketMsg();
 
     // Example event listener for incoming messages
     sockMySQL.ev.on("messages.upsert", async ({ messages }) => {
       for (const m of messages) {
         if (m.message?.conversation.toLowerCase() === 'hi') {
-          await connMySQL.reply(sockMongo, m, 'Hello! 👋');
+          await sockMySQL.reply(m, 'Hello! 👋');
         }
       }
     });
@@ -115,13 +113,12 @@ const customOptions = {
     // Initialize WhatsAppClient with MultiFile authentication
     const clientMulti = await WhatsAppClient.createMultiAuth('./authFiles', customOptions);
     const sockMulti = await clientMulti.getSocket();
-    const connMulti = await clientMulti.getSocketMsg();
 
     // Example event listener for incoming messages
     sockMulti.ev.on("messages.upsert", async ({ messages }) => {
       for (const m of messages) {
         if (m.message?.conversation.toLowerCase() === 'hi') {
-          await connMulti.reply(sockMulti, m, 'Hello! 👋');
+          await sockMulti.reply(m, 'Hello! 👋');
         }
       }
     });
@@ -203,13 +200,12 @@ const WhatsAppClient = require('easy-baileys');
         };
 
         const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
-        const sock = await client.getSocket();
-        const conn = await client.getSocketMsg();
+        const conn = await client.getSocket();
 
-        sock.ev.on("messages.upsert", async ({ messages }) => {
+        conn.ev.on("messages.upsert", async ({ messages }) => {
             for (const m of messages) {
                 if (m.message?.conversation.toLowerCase() === 'hi') {
-                    await conn.reply(sock, m, 'Hello! 👋');
+                    await conn.reply(m, 'Hello! 👋');
                 }
             }
         });
@@ -219,6 +215,12 @@ const WhatsAppClient = require('easy-baileys');
     }
 })();
 ```
+
+
+
+---
+
+
 
 ### Handling Message Upserts
 
@@ -250,6 +252,15 @@ sock.ev.on("messages.upsert", async ({ messages }) => {
 });
 ```
 
+
+
+---
+
+
+
+
+
+
 ### Overview: 📱💬
 
 The `connMessage` class provides methods to interact with WhatsApp messages, including sending various media types, replying, reacting, editing, and deleting messages.
@@ -258,182 +269,178 @@ The `connMessage` class provides methods to interact with WhatsApp messages, inc
 
 See [API Documentation](#configuration-options-%E2%9A%99%EF%B8%8F) for detailed method explanations.
 
-1. **`sendSticker(sock, m, bufferOrUrl)`** 🎨
+1. **`sendSticker(m, bufferOrUrl)`** 🎨
    - **Description**: Sends a sticker message to the given chat.
    - **Parameters**:
-     - `sock` (`object`): Baileys socket instance.
      - `m` (`object`): Message object containing chat information.
-     - `bufferOrUrl` (`string` or `Buffer`): URL or buffer containing the sticker data.
+     - `bufferOrUrl` (`string`, `Buffer`, or `filepath`): URL, buffer, or filepath containing the sticker data.
    - **Usage Example**:
      ```javascript
-     await conn.sendSticker(sock, m, 'https://example.com/sticker.webp');
+     await conn.sendSticker(m, 'https://example.com/sticker.webp');
      ```
 
-2. **`sendStickerReply(sock, m, bufferOrUrl)`** 🎉
+2. **`sendStickerReply(m, bufferOrUrl)`** 🎉
    - **Description**: Sends a sticker as a reply to a specific message.
    - **Parameters**: Same as `sendSticker`.
    - **Usage Example**:
      ```javascript
-     await conn.sendStickerReply(sock, m, 'https://example.com/sticker.webp');
+     await conn.sendStickerReply(m, 'https://example.com/sticker.webp');
      ```
 
-3. **`sendImage(sock, m, bufferOrUrl, caption)`** 🖼️
+3. **`sendImage(m, bufferOrUrl, caption)`** 🖼️
    - **Description**: Sends an image message with an optional caption.
    - **Parameters**:
-     - `sock` (`object`): Baileys socket instance.
      - `m` (`object`): Message object containing chat information.
-     - `bufferOrUrl` (`string` or `Buffer`): URL or buffer containing the image data.
+     - `bufferOrUrl` (`string`, `Buffer`, or `filepath`): URL, buffer, or filepath containing the image data.
      - `caption` (`string`): Optional caption for the image.
    - **Usage Example**:
      ```javascript
-     await conn.sendImage(sock, m, 'https://example.com/image.jpg', 'Beautiful scenery!');
+     await conn.sendImage(m, 'https://example.com/image.jpg', 'Beautiful scenery!');
      ```
 
-4. **`sendImageReply(sock, m, bufferOrUrl, caption)`** 🌄
+4. **`sendImageReply(m, bufferOrUrl, caption)`** 🌄
    - **Description**: Sends an image as a reply to a specific message.
    - **Parameters**: Same as `sendImage`.
    - **Usage Example**:
      ```javascript
-     await conn.sendImageReply(sock, m, 'https://example.com/image.jpg', 'Replying with an image.');
+     await conn.sendImageReply(m, 'https://example.com/image.jpg', 'Replying with an image.');
      ```
 
-5. **`sendVideo(sock, m, bufferOrUrl, caption)`** 📹
+5. **`sendVideo(m, bufferOrUrl, caption)`** 📹
    - **Description**: Sends a video message with an optional caption.
    - **Parameters**: Same as `sendImage`.
    - **Usage Example**:
      ```javascript
-     await conn.sendVideo(sock, m, 'https://example.com/video.mp4', 'Check out this video!');
+     await conn.sendVideo(m, 'https://example.com/video.mp4', 'Check out this video!');
      ```
 
-6. **`sendVideoReply(sock, m, bufferOrUrl, caption)`** 🎥
+6. **`sendVideoReply(m, bufferOrUrl, caption)`** 🎥
    - **Description**: Sends a video as a reply to a specific message.
    - **Parameters**: Same as `sendVideo`.
    - **Usage Example**:
      ```javascript
-     await conn.sendVideoReply(sock, m, 'https://example.com/video.mp4', 'Replying with a video.');
+     await conn.sendVideoReply(m, 'https://example.com/video.mp4', 'Replying with a video.');
      ```
 
-7. **`sendDocument(sock, m, bufferOrUrl, mimetype, fileName, caption)`** 📄
+7. **`sendDocument(m, bufferOrUrl, mimetype, fileName, caption)`** 📄
    - **Description**: Sends a document (file) message with an optional caption.
    - **Parameters**:
-     - `sock` (`object`): Baileys socket instance.
      - `m` (`object`): Message object containing chat information.
-     - `bufferOrUrl` (`string` or `Buffer`): URL or buffer containing the document data.
+     - `bufferOrUrl` (`string`, `Buffer`, or `filepath`): URL, buffer, or filepath containing the document data.
      - `mimetype` (`string`): MIME type of the document.
      - `fileName` (`string`): Name of the file.
      - `caption` (`string`): Optional caption for the document.
    - **Usage Example**:
      ```javascript
-     await conn.sendDocument(sock, m, 'https://example.com/document.pdf', 'application/pdf', 'document.pdf', 'Check out this document!');
+     await conn.sendDocument(m, 'https://example.com/document.pdf', 'application/pdf', 'document.pdf', 'Check out this document!');
      ```
 
-8. **`sendDocumentReply(sock, m, bufferOrUrl, mimetype, fileName, caption)`** 📝
+8. **`sendDocumentReply(m, bufferOrUrl, mimetype, fileName, caption)`** 📝
    - **Description**: Sends a document as a reply to a specific message.
    - **Parameters**: Same as `sendDocument`.
    - **Usage Example**:
      ```javascript
-     await conn.sendDocumentReply(sock, m, 'https://example.com/document.pdf', 'application/pdf', 'document.pdf', 'Replying with a document.');
+     await conn.sendDocumentReply(m, 'https://example.com/document.pdf', 'application/pdf', 'document.pdf', 'Replying with a document.');
      ```
 
-9. **`sendAudio(sock, m, bufferOrUrl, ptt)`** 🎵
+9. **`sendAudio(m, bufferOrUrl, ptt)`** 🎵
    - **Description**: Sends an audio message or voice note.
    - **Parameters**:
-     - `sock` (`object`): Baileys socket instance.
      - `m` (`object`): Message object containing chat information.
-     - `bufferOrUrl` (`string` or `Buffer`): URL or buffer containing the audio data.
+     - `bufferOrUrl` (`string`, `Buffer`, or `filepath`): URL, buffer, or filepath containing the audio data.
      - `ptt` (`boolean`): Whether the audio is a voice note (push-to-talk).
    - **Usage Example**:
      ```javascript
-     await conn.sendAudio(sock, m, 'https://example.com/audio.mp3', true);
+     await conn.sendAudio(m, 'https://example.com/audio.mp3', true);
      ```
 
-10. **`sendAudioReply(sock, m, bufferOrUrl, ptt)`** 🎤
+10. **`sendAudioReply(m, bufferOrUrl, ptt)`** 🎤
     - **Description**: Sends an audio message as a reply to a specific message.
     - **Parameters**: Same as `sendAudio`.
     - **Usage Example**:
       ```javascript
-      await conn.sendAudioReply(sock, m, 'https://example.com/audio.mp3', true);
+      await conn.sendAudioReply(m, 'https://example.com/audio.mp3', true);
       ```
 
-11. **`sendGif(sock, m, bufferOrUrl, playback)`** 🎬
+11. **`sendGif(m, bufferOrUrl, playback)`** 🎬
     - **Description**: Sends a GIF message.
     - **Parameters**:
-      - `sock` (`object`): Baileys socket instance.
       - `m` (`object`): Message object containing chat information.
-      - `bufferOrUrl` (`string` or `Buffer`): URL or buffer containing the GIF data.
+      - `bufferOrUrl` (`string`, `Buffer`, or `filepath`): URL, buffer, or filepath containing the GIF data.
       - `playback` (`boolean`): Whether to enable GIF playback.
     - **Usage Example**:
       ```javascript
-      await conn.sendGif(sock, m, 'https://example.com/animated.gif', true);
+      await conn.sendGif(m, 'https://example.com/animated.gif', true);
       ```
 
-12. **`sendGifReply(sock, m, bufferOrUrl, playback)`** 🎞️
+12. **`sendGifReply(m, bufferOrUrl, playback)`** 🎞️
     - **Description**: Sends a GIF as a reply to a specific message.
     - **Parameters**: Same as `sendGif`.
     - **Usage Example**:
       ```javascript
-      await conn.sendGifReply(sock, m, 'https://example.com/animated.gif', true);
+      await conn.sendGifReply(m, 'https://example.com/animated.gif', true);
       ```
 
-13. **`reply(sock, m, text)`** 💬
+13. **`reply(m, text)`** 💬
     - **Description**: Replies to a message with text.
     - **Parameters**:
-      - `sock` (`object`): Baileys socket instance.
       - `m` (`object`): Message object containing chat information.
       - `text` (`string`): Text message to reply with.
     - **Usage Example**:
       ```javascript
-      await conn.reply(sock, m, 'Your reply message.');
+      await conn.reply(m, 'Your reply message.');
       ```
 
-14. **`send(sock, m, text)`** ✉️
+14. **`send(m, text)`** ✉️
     - **Description**: Sends a text message to a chat.
     - **Parameters**: Same as `reply`.
     - **Usage Example**:
       ```javascript
-      await conn.send(sock, m, 'Your message.');
+      await conn.send(m, 'Your message.');
       ```
 
-15. **`react(sock, m, emoji)`** 🎭
+15. **`react(m, emoji)`** 🎭
     - **Description**: Reacts to a message with an emoji.
     - **Parameters**:
-      - `sock` (`object`): Baileys socket instance.
       - `m` (`object`): Message object containing chat information.
       - `emoji` (`string`): Emoji reaction.
     - **Usage Example**:
       ```javascript
-      await conn.react(sock, m, '😄');
+      await conn.react(m, '😄');
       ```
 
-16. **`editMsg(sock, m, sentMessage, newMessage)`** 📝
+16. **`editMsg(m, sentMessage, newMessage)`** 📝
     - **Description**: Edits a previously sent message with a new message.
     - **Parameters**:
-      - `sock` (`object`): Baileys socket instance.
       - `m` (`object`): Message object containing chat information.
       - `sentMessage` (`object`): Previously sent message object.
       - `newMessage` (`string`): New message content.
     - **Usage Example**:
       ```javascript
-      await conn.editMsg(sock, m, sentMessage, 'Updated message.');
+      await conn.editMsg(m, sentMessage, 'Updated message.');
       ```
 
-17. **`deleteMsgGroup(sock, m)`** 🗑️
+17. **`deleteMsgGroup(m)`** 🗑️
     - **Description**: Deletes a message in a group chat (requires admin privileges).
     - **Parameters**:
-      - `sock` (`object`): Baileys socket instance.
       - `m` (`object`): Message object containing chat information.
     - **Usage Example**:
       ```javascript
-      await conn.deleteMsgGroup(sock, m);
+      await conn.deleteMsgGroup(m);
       ```
 
-18. **`deleteMsg(sock, m)`** 🚫
+18. **`deleteMsg(m)`** 🚫
     - **Description**: Deletes a message (self-message or sent to you).
     - **Parameters**: Same as `deleteMsgGroup`.
     - **Usage Example**:
       ```javascript
-      await conn.deleteMsg(sock, m);
+      await conn.deleteMsg(m);
       ```
+
+
+---
+
+
 
 ### Configuration Options ⚙️
 
@@ -449,6 +456,7 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 ## Thanks to
 
 [![WhiskeySockets](https://github.com/WhiskeySockets.png?size=100)](https://github.com/WhiskeySockets/Baileys)
+[![bobslavtriev](https://github.com/bobslavtriev.png?size=100)](https://github.com/bobslavtriev/mysql-baileys)
 
 ## License 📄
 

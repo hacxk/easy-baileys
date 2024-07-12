@@ -13,14 +13,12 @@ const WhatsAppClient = require('easy-baileys');
         // Example using MultiFile authentication
         const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
         const sock = await client.getSocket();
-        const conn = client.getSocketMsg();
-
-
+        
         sock.ev.on("messages.upsert", async ({ messages }) => {
             for (const m of messages) {
                 console.log(m)
                 if (m.message?.conversation.toLowerCase() === 'hi') {
-                    conn.reply(sockMulti, m, 'Hello! 👋');
+                    await sock.reply(m, 'Hello! 👋');
                 }
             }
         });

@@ -2,27 +2,34 @@ const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStor
 const pino = require('pino');
 const NodeCache = require('node-cache');
 const { MongoClient } = require("mongodb");
-const { useMySQLAuthState } = require('mysql-baileys'); // New import for MySQL authentication
-
+const { useMySQLAuthState } = require('mysql-baileys'); // Import for MySQL authentication
 const useMongoDBAuthState = require("../auth/MongoAuth");
 const connMessage = require("../message/connMessage");
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'silent' });
-
 const store = makeInMemoryStore({ logger });
 
-const msgOption = new connMessage();
-
+/**
+ * WhatsAppClient class for handling WhatsApp Web client.
+ */
 class WhatsAppClient {
+    /**
+     * Creates an instance of WhatsAppClient.
+     * @param {object} [customOptions={}] - Custom options for the client.
+     */
     constructor(customOptions = {}) {
         this.logger = pino();
         this.msgRetryCounterCache = new NodeCache();
         this.customOptions = customOptions;
         this.pairingCode = '';
-        this.state;
-        this.saveCreds;
+        this.state = null;
+        this.saveCreds = null;
     }
 
+    /**
+     * Initializes MongoDB authentication.
+     * @param {string} pathAuthFile - Path to the MongoDB authentication file.
+     */
     async initMongoAuth(pathAuthFile) {
         const mongoClient = new MongoClient(pathAuthFile, {
             useNewUrlParser: true,
@@ -41,6 +48,10 @@ class WhatsAppClient {
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 
+    /**
+     * Initializes multi-file authentication.
+     * @param {string} pathAuthFile - Path to the multi-file authentication file.
+     */
     async initMultiFileAuth(pathAuthFile) {
         const { state, saveCreds } = await useMultiFileAuthState(pathAuthFile);
         this.state = state;
@@ -49,6 +60,10 @@ class WhatsAppClient {
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 
+    /**
+     * Initializes MySQL authentication.
+     * @param {object} mysqlConfig - MySQL configuration object.
+     */
     async initMySQLAuth(mysqlConfig) {
         const { state, saveCreds } = await useMySQLAuthState(mysqlConfig);
         this.state = state;
@@ -57,6 +72,11 @@ class WhatsAppClient {
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 
+    /**
+     * Initializes the WhatsApp socket.
+     * @param {object} creds - Credentials for authentication.
+     * @param {object} keys - Keys for authentication.
+     */
     async initSocket(creds, keys) {
         const getMessage = async (key) => {
             if (store) {
@@ -84,9 +104,17 @@ class WhatsAppClient {
                 linkPreviewImageThumbnailWidth: 1980,
                 generateHighQualityLinkPreview: true,
                 getMessage,
-                msgOption: msgOption,
                 ...this.customOptions
             });
+
+            this.msgOption = new connMessage(this.sock);
+         
+            for (const funcName of Object.getOwnPropertyNames(connMessage.prototype)) {
+                if (funcName !== 'constructor') {
+                    this.sock[funcName] = connMessage.prototype[funcName].bind(this.sock);
+                }
+            }
+
 
             store?.bind(this.sock.ev);
 
@@ -109,14 +137,19 @@ class WhatsAppClient {
         }
     }
 
+    /**
+     * Gets the socket instance.
+     * @returns {Promise<object>} - The socket instance.
+     */
     async getSocket() {
         return this.sock;
     }
 
-    async getSocketMsg() {
-        return this.sock.ws.config.msgOption;
-    }
-
+    /**
+     * Gets the pairing code.
+     * @param {string} jid - The JID of the device.
+     * @returns {Promise<string>} - The pairing code.
+     */
     async getPairingCode(jid) {
         if (this.sock.authState.creds.registered) throw new Error('Device is already registered. Pairing code not needed.');
         if (!this.customOptions.printQRInTerminal) {
@@ -147,24 +180,47 @@ class WhatsAppClient {
         }
     }
 
+    /**
+     * Creates a WhatsAppClient instance with MongoDB authentication.
+     * @param {string} pathAuthFile - Path to the MongoDB authentication file.
+     * @param {object} [customOptions={}] - Custom options for the client.
+     * @returns {Promise<WhatsAppClient>} - A new WhatsAppClient instance.
+     */
     static async createMongoAuth(pathAuthFile, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
         await client.initMongoAuth(pathAuthFile);
         return client;
     }
 
+    /**
+     * Creates a WhatsAppClient instance with multi-file authentication.
+     * @param {string} pathAuthFile - Path to the multi-file authentication file.
+     * @param {object} [customOptions={}] - Custom options for the client.
+     * @returns {Promise<WhatsAppClient>} - A new WhatsAppClient instance.
+     */
     static async createMultiAuth(pathAuthFile, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
         await client.initMultiFileAuth(pathAuthFile);
         return client;
     }
 
+    /**
+     * Creates a WhatsAppClient instance with MySQL authentication.
+     * @param {object} mysqlConfig - MySQL configuration object.
+     * @param {object} [customOptions={}] - Custom options for the client.
+     * @returns {Promise<WhatsAppClient>} - A new WhatsAppClient instance.
+     */
     static async createMySQLAuth(mysqlConfig, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
         await client.initMySQLAuth(mysqlConfig);
         return client;
     }
 
+    /**
+     * Deletes a message from a group.
+     * @param {object} m - The message object.
+     * @returns {Promise<object>} - The response from the delete operation.
+     */
     async deleteMsgGroup(m) {
         try {
             const { remoteJid } = m.key;
@@ -197,6 +253,13 @@ class WhatsAppClient {
         }
     }
 
+    /**
+     * Edits a sent message.
+     * @param {object} m - The original message object.
+     * @param {object} sentMessage - The sent message object.
+     * @param {string} newMessage - The new message text.
+     * @returns {Promise<object>} - The response from the edit operation.
+     */
     async editMsg(m, sentMessage, newMessage) {
         try {
             await this.sock.sendPresenceUpdate('composing', m.key.remoteJid);
