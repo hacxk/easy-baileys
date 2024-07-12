@@ -1,6 +1,9 @@
 const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, delay, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
 const pino = require('pino');
 const NodeCache = require('node-cache');
+const { MongoClient } = require("mongodb");
+
+const useMongoDBAuthState = require("../auth/MongoAuth");
 const connMessage = require("../message/connMessage");
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'silent' });
@@ -15,14 +18,37 @@ class WhatsAppClient {
         this.msgRetryCounterCache = new NodeCache();
         this.customOptions = customOptions;
         this.pairingCode = '';
+        this.state;
+        this.saveCreds;
     }
 
-    async init(pathAuthFile) {
-        if (!pathAuthFile) throw new Error('Authentication path is required.');
+    async initMongoAuth(pathAuthFile) {
+        const mongoClient = new MongoClient(pathAuthFile, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
 
+        await mongoClient.connect();
+
+        const db = mongoClient.db("v42ef24t4ew");
+        const collection = db.collection("v43vdv4wetds");
+
+        const { state, saveCreds } = await useMongoDBAuthState(collection);
+        this.state = state;
+        this.saveCreds = saveCreds;
+
+        await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
+    }
+
+    async initMultiFileAuth(pathAuthFile) {
         const { state, saveCreds } = await useMultiFileAuthState(pathAuthFile);
         this.state = state;
+        this.saveCreds = saveCreds;
 
+        await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
+    }
+
+    async initSocket(creds, keys) {
         const getMessage = async (key) => {
             if (store) {
                 const msg = await store.loadMessage(key.remoteJid, key.id);
@@ -43,8 +69,8 @@ class WhatsAppClient {
                 defaultQueryTimeoutMs: undefined,
                 logger,
                 auth: {
-                    creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, this.logger),
+                    creds,
+                    keys,
                 },
                 linkPreviewImageThumbnailWidth: 1980,
                 generateHighQualityLinkPreview: true,
@@ -55,7 +81,7 @@ class WhatsAppClient {
 
             store?.bind(this.sock.ev);
 
-            this.sock.ev.on('creds.update', saveCreds);
+            this.sock.ev.on('creds.update', this.saveCreds);
             this.sock.ev.on('connection.update', (update) => {
                 const { connection, lastDisconnect } = update;
                 if (connection === 'close') {
@@ -72,15 +98,13 @@ class WhatsAppClient {
             this.logger.error('Error:', error);
             throw error;
         }
+    }
 
+    async getSocket() {
         return this.sock;
     }
 
-    getSocket() {
-        return this.sock;
-    }
-
-    getSocketMsg() {
+    async getSocketMsg() {
         return this.sock.ws.config.msgOption;
     }
 
@@ -114,9 +138,15 @@ class WhatsAppClient {
         }
     }
 
-    static async create(pathAuthFile, customOptions = {}) {
+    static async createMongoAuth(pathAuthFile, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
-        await client.init(pathAuthFile);
+        await client.initMongoAuth(pathAuthFile);
+        return client;
+    }
+
+    static async createMultiAuth(pathAuthFile, customOptions = {}) {
+        const client = new WhatsAppClient(customOptions);
+        await client.initMultiFileAuth(pathAuthFile);
         return client;
     }
 
@@ -164,4 +194,3 @@ class WhatsAppClient {
 }
 
 module.exports = WhatsAppClient;
-

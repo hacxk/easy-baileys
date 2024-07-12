@@ -1,9 +1,10 @@
+```markdown
 # easy-baileys 🤖
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/easy-baileys.svg)](https://www.npmjs.com/package/easy-baileys)
 
-**easy-baileys** is a Node.js package designed to streamline WhatsApp connectivity and automate message handling, offering robust flexibility. At its core, it leverages the powerful capabilities of [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys).
+**easy-baileys** is a Node.js package designed to streamline WhatsApp connectivity and automate message handling, offering robust flexibility. It leverages the powerful capabilities of [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys).
 
 ## Installation 📦
 
@@ -13,29 +14,88 @@ npm install easy-baileys
 
 ## Usage 🛠️
 
-### 1. Import the module:
+### 1. Importing the Module
 
 ```javascript
 const WhatsAppClient = require('easy-baileys');
 ```
 
-### 2. Create a client instance:
+### 2. Creating a Client Instance with MongoDB Authentication
 
 ```javascript
+const WhatsAppClient = require('easy-baileys');
+
 const customOptions = {
   browser: ["Ubuntu", "Chrome", "20.0.04"],
   printQRInTerminal: false, // Set to true for QR code in terminal
   mobile: false,
 };
 
-const client = await WhatsAppClient.create('./auth', customOptions);
+(async () => {
+  try {
+    // Initialize WhatsAppClient with MongoDB authentication
+    const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', customOptions);
+    const sockMongo = clientMongo.getSocket();
+    const connMongo = clientMongo.getSocketMsg();
+
+    // Example event listener for incoming messages
+    sockMongo.ev.on("messages.upsert", async ({ messages }) => {
+      for (const m of messages) {
+        if (m.message?.conversation.toLowerCase() === 'hi') {
+          await connMongo.reply(sockMongo, m, 'Hello! 👋');
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error initializing WhatsApp client with MongoDB authentication:', error.message);
+  }
+})();
 ```
 
-### 3. Obtain a pairing code (Optional):
+### 3. Creating a Client Instance with MultiFile Authentication
+
+```javascript
+const WhatsAppClient = require('easy-baileys');
+
+const customOptions = {
+  browser: ["Ubuntu", "Chrome", "20.0.04"],
+  printQRInTerminal: false, // Set to true for QR code in terminal
+  mobile: false,
+};
+
+(async () => {
+  try {
+    // Initialize WhatsAppClient with MultiFile authentication
+    const clientMulti = await WhatsAppClient.createMultiAuth('./authFiles', customOptions);
+    const sockMulti = clientMulti.getSocket();
+    const connMulti = clientMulti.getSocketMsg();
+
+    // Example event listener for incoming messages
+    sockMulti.ev.on("messages.upsert", async ({ messages }) => {
+      for (const m of messages) {
+        if (m.message?.conversation.toLowerCase() === 'hi') {
+          await connMulti.reply(sockMulti, m, 'Hello! 👋');
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error initializing WhatsApp client with MultiFile authentication:', error.message);
+  }
+})();
+```
+
+### Explanation
+
+- **MongoDB Authentication Example**: Initializes the `WhatsAppClient` instance using MongoDB credentials and sets up event listeners to respond to messages.
+- **MultiFile Authentication Example**: Initializes the `WhatsAppClient` instance using authentication files stored locally and handles incoming messages similarly.
+
+### 4. Obtain a pairing code (Optional)
 
 ```javascript
 const sock = client.getSocket();
-const code = await client.getPairingCode(123456789); // Your whatsapp number (Without +)
+const code = await client.getPairingCode(123456789); // Your WhatsApp number (Without +)
 console.log(code); 
 ```
 
@@ -52,9 +112,9 @@ const WhatsAppClient = require('easy-baileys');
         mobile: false,
     };
 
-    const client = await WhatsAppClient.create('./auth', customOptions);
+    const client = await WhatsAppClient.createMultiAuth('./auth', customOptions);
     const sock = client.getSocket();
-    const code = await client.getPairingCode(123456789); // Your whatsapp number (Without +)
+    const code = await client.getPairingCode(123456789); // Your WhatsApp number (Without +)
     console.log(code); // Outputs code with validated phone number
   } catch (error) {
     console.error('Error initializing WhatsApp client:', error.message);
@@ -71,7 +131,7 @@ const WhatsAppClient = require('easy-baileys');
       // ... other options
       printQRInTerminal: true, 
     };
-    const client = await WhatsAppClient.create('./auth', customOptions);
+    const client = await WhatsAppClient.createMultiAuth('./auth', customOptions);
     const sock = client.getSocket();
   } catch (error) {
     console.error('Error initializing WhatsApp client:', error.message);
@@ -80,6 +140,39 @@ const WhatsAppClient = require('easy-baileys');
 ```
 
 The QR code will be printed directly in your terminal.
+
+---
+
+## Simple Example Code
+
+```javascript
+const WhatsAppClient = require('easy-baileys');
+
+(async () => {
+    try {
+        const customOptions = {
+            browser: ["Ubuntu", "Chrome", "20.0.04"],
+            printQRInTerminal: true,
+            mobile: false,
+        };
+
+        const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
+        const sock = client.getSocket();
+        const conn = client.getSocketMsg();
+
+        sock.ev.on("messages.upsert", async ({ messages }) => {
+            for (const m of messages) {
+                if (m.message?.conversation.toLowerCase() === 'hi') {
+                    await conn.reply(sock, m, 'Hello! 👋');
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error initializing WhatsApp client:', error.message);
+    }
+})();
+```
 
 ### Handling Message Upserts
 
@@ -92,28 +185,6 @@ sock.ev.on("messages.upsert", async ({ messages }) => {
     }
 });
 ```
-
-### Detailed Example
-
-Let's break down the example to understand how it works:
-
-1. **Event Listener Setup**:
-    ```javascript
-    sock.ev.on("messages.upsert", async ({ messages }) => {
-    ```
-    This line sets up an event listener for the `messages.upsert` event. The `async` keyword indicates that the function will be asynchronous, allowing you to use `await` within it.
-
-2. **Iterating Through Messages**:
-    ```javascript
-    for (const m of messages) {
-    ```
-    This line starts a loop that will iterate over each message in the `messages` array. This is useful because `messages.upsert` can provide multiple messages at once.
-
-3. **Logging Each Message**:
-    ```javascript
-    console.log(m);
-    ```
-    This line logs each message to the console. In a real application, you might want to process the message, save it to a database, or perform some other action.
 
 ### Real-World Use Case
 
@@ -133,19 +204,13 @@ sock.ev.on("messages.upsert", async ({ messages }) => {
 });
 ```
 
-In this example:
-- We first check if the message contains a `conversation` field, which holds the text of the message.
-- We then extract the sender's ID and the message text.
+### Overview: 📱💬
 
-
-
----
-
-
-#### Overview: 📱💬
 The `connMessage` class provides methods to interact with WhatsApp messages, including sending various media types, replying, reacting, editing, and deleting messages.
 
-#### Methods:
+### Methods
+
+See [API Documentation](#configuration-options-%E2%9A%99%EF%B8%8F) for detailed method explanations.
 
 1. **`sendSticker(sock, m, bufferOrUrl)`** 🎨
    - **Description**: Sends a sticker message to the given chat.
@@ -324,55 +389,7 @@ The `connMessage` class provides methods to interact with WhatsApp messages, inc
       await conn.deleteMsg(sock, m);
       ```
 
-#### Usage Example:
-```javascript
-const WhatsAppClient = require('easy-baileys');
-
-(async () => {
-    try {
-        const customOptions = {
-            browser:
-
- ["Ubuntu", "Chrome", "20.0.04"],
-            printQRInTerminal: true,
-            mobile: false,
-        };
-
-        const client = await WhatsAppClient.create('./hacxk', customOptions);
-        const sock = client.getSocket();
-        const conn = client.getSocketMsg();
-
-        sock.ev.on("messages.upsert", async ({ messages }) => {
-            for (const m of messages) {
-                if (m.message?.conversation.toLowerCase() === 'hi') {
-                    await conn.reply(sock, m, 'Hello! 👋');
-                }
-            }
-        });
-
-    } catch (error) {
-        console.error('Error initializing WhatsApp client:', error.message);
-    }
-})();
-```
-
-### Notes:
-- Ensure the `sock` and `m` parameters are correctly initialized and provided for each method.
-- Use appropriate message formats (`Buffer` or `string`) for media types like stickers, images, videos, documents, and GIFs
-
-
----
-
-
-
-### Conclusion
-
-The `@whiskeysockets/baileys` library makes it straightforward to handle WhatsApp messages in a Node.js environment. By setting up event listeners and processing incoming messages, you can build robust applications that interact with WhatsApp users in real-time.
-
-For more detailed information and advanced usage, refer to the official [Baileys documentation](https://github.com/@whiskeysockets/Baileys).
-
-
-## Configuration Options ⚙️
+### Configuration Options ⚙️
 
 - `browser`: An array specifying the browser information (e.g., `["Ubuntu", "Chrome", "20.0.04"]`).
 - `printQRInTerminal`: (Boolean) Display the QR code in the terminal (default: `false`).
@@ -383,8 +400,10 @@ For more detailed information and advanced usage, refer to the official [Baileys
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
 
+## Thanks to
+
+[![WhiskeySockets](https://github.com/WhiskeySockets.png?size=100)](https://github.com/WhiskeySockets/Baileys)
+
 ## License 📄
 
-This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
-
----
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
