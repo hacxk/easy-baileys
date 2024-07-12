@@ -35,8 +35,8 @@ const customOptions = {
   try {
     // Initialize WhatsAppClient with MongoDB authentication
     const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', customOptions);
-    const sockMongo = clientMongo.getSocket();
-    const connMongo = clientMongo.getSocketMsg();
+    const sockMongo = await clientMongo.getSocket();
+    const connMongo = await clientMongo.getSocketMsg();
 
     // Example event listener for incoming messages
     sockMongo.ev.on("messages.upsert", async ({ messages }) => {
@@ -68,8 +68,8 @@ const customOptions = {
   try {
     // Initialize WhatsAppClient with MultiFile authentication
     const clientMulti = await WhatsAppClient.createMultiAuth('./authFiles', customOptions);
-    const sockMulti = clientMulti.getSocket();
-    const connMulti = clientMulti.getSocketMsg();
+    const sockMulti = await clientMulti.getSocket();
+    const connMulti = await clientMulti.getSocketMsg();
 
     // Example event listener for incoming messages
     sockMulti.ev.on("messages.upsert", async ({ messages }) => {
@@ -113,7 +113,7 @@ const WhatsAppClient = require('easy-baileys');
     };
 
     const client = await WhatsAppClient.createMultiAuth('./auth', customOptions);
-    const sock = client.getSocket();
+    const sock = await client.getSocket();
     const code = await client.getPairingCode(123456789); // Your WhatsApp number (Without +)
     console.log(code); // Outputs code with validated phone number
   } catch (error) {
@@ -132,7 +132,7 @@ const WhatsAppClient = require('easy-baileys');
       printQRInTerminal: true, 
     };
     const client = await WhatsAppClient.createMultiAuth('./auth', customOptions);
-    const sock = client.getSocket();
+    const sock = await client.getSocket();
   } catch (error) {
     console.error('Error initializing WhatsApp client:', error.message);
   }
@@ -157,8 +157,8 @@ const WhatsAppClient = require('easy-baileys');
         };
 
         const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
-        const sock = client.getSocket();
-        const conn = client.getSocketMsg();
+        const sock = await client.getSocket();
+        const conn = await client.getSocketMsg();
 
         sock.ev.on("messages.upsert", async ({ messages }) => {
             for (const m of messages) {
