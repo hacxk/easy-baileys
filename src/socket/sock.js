@@ -1,14 +1,13 @@
-const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, delay, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
 const pino = require('pino');
 const NodeCache = require('node-cache');
+const connMessage = require("../message/connMessage");
 
-// Enhanced logging
-const logger = pino({
-    level: process.env.LOG_LEVEL || 'silent',
-});
+const logger = pino({ level: process.env.LOG_LEVEL || 'silent' });
 
-// In-memory store for caching
 const store = makeInMemoryStore({ logger });
+
+const msgOption = new connMessage();
 
 class WhatsAppClient {
     constructor(customOptions = {}) {
@@ -19,9 +18,7 @@ class WhatsAppClient {
     }
 
     async init(pathAuthFile) {
-        if (!pathAuthFile) {
-            throw new Error('Authentication path is required.');
-        }
+        if (!pathAuthFile) throw new Error('Authentication path is required.');
 
         const { state, saveCreds } = await useMultiFileAuthState(pathAuthFile);
         this.state = state;
@@ -31,7 +28,6 @@ class WhatsAppClient {
                 const msg = await store.loadMessage(key.remoteJid, key.id);
                 return msg && msg.message ? msg.message : undefined;
             }
-            // only if store is present
             return proto.Message.fromObject({});
         };
 
@@ -42,10 +38,7 @@ class WhatsAppClient {
                 downloadHistory: this.customOptions.downloadHistory || false,
                 msgRetryCounterCache: this.msgRetryCounterCache,
                 syncFullHistory: this.customOptions.syncFullHistory || true,
-                shouldSyncHistoryMessage: msg => {
-                    //   console.log(chalk.cyanBright(`Syncing chats..[${msg.progress}%]`));
-                    return !!msg.syncType;
-                },
+                shouldSyncHistoryMessage: msg => !!msg.syncType,
                 markOnlineOnConnect: this.customOptions.markOnlineOnConnect || true,
                 defaultQueryTimeoutMs: undefined,
                 logger,
@@ -56,10 +49,11 @@ class WhatsAppClient {
                 linkPreviewImageThumbnailWidth: 1980,
                 generateHighQualityLinkPreview: true,
                 getMessage,
+                msgOption: msgOption,
                 ...this.customOptions
             });
 
-            store?.bind(this.sock.ev)
+            store?.bind(this.sock.ev);
 
             this.sock.ev.on('creds.update', saveCreds);
             this.sock.ev.on('connection.update', (update) => {
@@ -67,7 +61,6 @@ class WhatsAppClient {
                 if (connection === 'close') {
                     const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
                     console.log('connection closed due to', lastDisconnect?.error, ', reconnecting', shouldReconnect);
-                    // reconnect if not logged out
                     if (shouldReconnect) {
                         this.init(pathAuthFile);
                     }
@@ -87,24 +80,21 @@ class WhatsAppClient {
         return this.sock;
     }
 
-    async getPairingCode(jid) {
-        if (this.sock.authState.creds.registered) {
-            throw new Error('Device is already registered. Pairing code not needed.');
-        }
+    getSocketMsg() {
+        return this.sock.ws.config.msgOption;
+    }
 
+    async getPairingCode(jid) {
+        if (this.sock.authState.creds.registered) throw new Error('Device is already registered. Pairing code not needed.');
         if (!this.customOptions.printQRInTerminal) {
             return new Promise((resolve, reject) => {
                 setTimeout(async () => {
                     try {
-                        // Convert jid to string if necessary
                         const jidString = String(jid);
-
-                        // Sanitize phone number (jidString) using libphonenumber-js
                         const phoneUtil = require('libphonenumber-js');
                         const parsedNumber = phoneUtil.parsePhoneNumber('+' + jidString);
 
                         if (parsedNumber.isValid()) {
-                            // Format in E.164 format (e.g., +1234567890)
                             const code = await this.sock.requestPairingCode(jidString);
                             this.pairingCode = `${code}`;
                             resolve(this.pairingCode);
@@ -129,6 +119,49 @@ class WhatsAppClient {
         await client.init(pathAuthFile);
         return client;
     }
+
+    async deleteMsgGroup(m) {
+        try {
+            const { remoteJid } = m.key;
+            const groupMetadata = await this.sock.groupMetadata(remoteJid);
+            const botId = this.sock.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
+            const botIsAdmin = groupMetadata.participants.some(p => p.id.includes(botId) && p.admin);
+
+            if (!botIsAdmin) throw new Error("I cannot delete messages because I am not an admin in this group.");
+
+            const isOwnMessage = m.key.participant === m?.message?.extendedTextMessage?.contextInfo?.participant;
+            const stanId = m?.message?.extendedTextMessage?.contextInfo?.stanzaId;
+
+            const messageToDelete = {
+                key: {
+                    remoteJid: m.key.remoteJid,
+                    fromMe: isOwnMessage,
+                    id: stanId,
+                    participant: m?.message?.extendedTextMessage?.contextInfo?.participant
+                }
+            };
+
+            await this.sock.sendPresenceUpdate('composing', remoteJid);
+            await delay(200);
+            const response = await this.sock.sendMessage(remoteJid, { delete: messageToDelete.key });
+            await delay(750);
+            await this.sock.sendMessage(remoteJid, { delete: m.key });
+            return response;
+        } catch (err) {
+            throw new Error(`Error in deleteMsgGroup: ${err.message}`);
+        }
+    }
+
+    async editMsg(m, sentMessage, newMessage) {
+        try {
+            await this.sock.sendPresenceUpdate('composing', m.key.remoteJid);
+            await delay(200);
+            return await this.sock.sendMessage(m.key.remoteJid, { edit: sentMessage.key, text: newMessage, type: "MESSAGE_EDIT" });
+        } catch (err) {
+            throw new Error(`Error in editMsg: ${err.message}`);
+        }
+    }
 }
 
 module.exports = WhatsAppClient;
+
