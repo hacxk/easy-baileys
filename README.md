@@ -28,13 +28,13 @@ npm install easy-baileys
 ### 1. Importing the Module
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+const { WhatsAppClient } = require('easy-baileys');
 ```
 
 ### 2. Creating a Client Instance with MongoDB Authentication
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+const { WhatsAppClient } = require('easy-baileys');
 
 const customOptions = {
   browser: ["Ubuntu", "Chrome", "20.0.04"],
@@ -66,7 +66,7 @@ const customOptions = {
 ### 3. Creating a Client Instance with MySQL Authentication
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+const { WhatsAppClient } = require('easy-baileys');
 
 // Example MySQL configuration
 const mysqlConfig = {
@@ -109,7 +109,7 @@ const customOptions = {
 ### 4. Creating a Client Instance with MultiFile Authentication
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+const { WhatsAppClient } = require('easy-baileys');
 
 const customOptions = {
   browser: ["Ubuntu", "Chrome", "20.0.04"],
@@ -154,7 +154,7 @@ console.log(code);
 ## Example: Pairing Code with Validated Phone Number 📞
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+const { WhatsAppClient } = require('easy-baileys');
 
 (async () => {
   try {
@@ -198,7 +198,8 @@ The QR code will be printed directly in your terminal.
 ## Simple Example Code
 
 ```javascript
-const WhatsAppClient = require('easy-baileys');
+
+const { WhatsAppClient } = require('easy-baileys');
 
 (async () => {
     try {
@@ -222,7 +223,7 @@ const WhatsAppClient = require('easy-baileys');
     } catch (error) {
         console.error('Error initializing WhatsApp client:', error.message);
     }
-})();
+})();```
 ```
 
 

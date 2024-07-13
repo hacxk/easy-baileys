@@ -721,14 +721,14 @@ class connMessage {
         }
     }
 
-     /**
-     * Schedules a message to be sent at a specific time.
-     * @param {string} jid - The JID of the recipient.
-     * @param {object} content - The content of the message.
-     * @param {Date} sendTime - The time to send the message.
-     * @throws {Error} - If there's an error scheduling the message.
-     */
-     async scheduleMessage(jid, content, sendTime) {
+    /**
+    * Schedules a message to be sent at a specific time.
+    * @param {string} jid - The JID of the recipient.
+    * @param {object} content - The content of the message.
+    * @param {Date} sendTime - The time to send the message.
+    * @throws {Error} - If there's an error scheduling the message.
+    */
+    async scheduleMessage(jid, content, sendTime) {
         try {
             const now = new Date();
             if (sendTime <= now) {
