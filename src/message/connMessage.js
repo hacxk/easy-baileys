@@ -12,7 +12,6 @@ let socks;
  * @throws {Error} - If there is an error sending the message.
  */
 const sendMessage = async (jid, content, options = {}) => {
-    console.log(socks, '[[[[[[[[[[[[[[[[[[[[[[[[')
     try {
         return await socks.sendMessage(jid, content, options);
     } catch (err) {
@@ -42,6 +41,10 @@ const sendMessageQuoted = async (jid, m, content, options = {}) => {
  * connMessage class for sending different types of messages.
  */
 class connMessage {
+    /**
+   * Creates a new connMessage instance.
+   * @param {object} sock - The Baileys socket instance.
+   */
     constructor(sock) { // Add sock as a parameter
         this.sock = sock;
         socks = sock;
@@ -420,6 +423,70 @@ class connMessage {
             throw new Error(`Error in deleteMsg: ${err.message}`);
         }
     }
+
+    /**
+  * Recursively finds a path in an object where a specified value is located.
+  * @param {object} obj - The object to search.
+  * @param {any} targetValue - The value to search for within the object.
+  * @param {string} [currentPath=""] - The current path within the object (used internally for recursion).
+  * @returns {Promise<string|null>} - The path to the value if found, otherwise null.
+  * @throws {Error} - Throws an error if there's an issue during the search process.
+  */
+    async findValue(obj, targetValue, currentPath = "") {
+        try {
+            if (typeof obj !== "object" || obj === null) {
+                return null;
+            }
+
+            for (const key in obj) {
+                const newPath = currentPath ? `${currentPath}.${key}` : key;
+
+                if (obj[key] === targetValue) {
+                    return newPath;
+                } else {
+                    const result = await this.findValue(obj[key], targetValue, newPath); // Corrected to use `this.findValue`
+                    if (result) {
+                        return result;
+                    }
+                }
+            }
+
+            return null;
+        } catch (err) {
+            throw new Error(`Error in findValue: ${err.message}`);
+        }
+    }
+
+    /**
+ * Recursively finds an object in another object where a specified value is located.
+ * @param {object} obj - The object to search.
+ * @param {any} targetValue - The value to search for within the object.
+ * @returns {Promise<any|null>} - The object value if found, otherwise null.
+ * @throws {Error} - Throws an error if there's an issue during the search process.
+ */
+    async findObject(obj, targetValue) {
+        try {
+            if (typeof obj !== "object" || obj === null) {
+                return null;
+            }
+
+            for (const key in obj) {
+                if (obj[key] === targetValue) {
+                    return obj; // Return the current object if value matches
+                } else if (typeof obj[key] === "object") {
+                    const result = await this.findObject(obj[key], targetValue);
+                    if (result !== null) {
+                        return result;
+                    }
+                }
+            }
+
+            return null;
+        } catch (err) {
+            throw new Error(`Error in findObject: ${err.message}`);
+        }
+    }
+
 }
 
 module.exports = connMessage;

@@ -1,4 +1,12 @@
-// src/message/getTextContent.js
+/**
+ * Extracts text content from a given message.
+ * 
+ * @async
+ * @function extractTextContent
+ * @param {object} message - The message object from which to extract text content.
+ * @returns {Promise<string|null>} The extracted text content, or null if no text content is found.
+ * @throws {Error} If an error occurs during extraction.
+ */
 async function extractTextContent(message) {
     try {
         const messageType = Object.keys(message.message || {})[0];

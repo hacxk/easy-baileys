@@ -12,9 +12,11 @@ const {
     streamToBuffer,
     getQuotedMedia
 } = require('./message/downloadMedia');
+const connMessage  = require('./message/connMessage');
 
 module.exports = {
     WhatsAppClient,
+    connMessage,
     extractMimeType,
     extractQuotedMessage,
     extractTextContent,

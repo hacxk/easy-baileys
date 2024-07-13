@@ -1,4 +1,12 @@
-// src/message/getQuoted.js
+/**
+ * Extracts the quoted message from a given message.
+ * 
+ * @async
+ * @function extractQuotedMessage
+ * @param {object} message - The message object containing the quoted message information.
+ * @returns {Promise<object|null>} The quoted message object, or null if no quoted message is found.
+ * @throws {Error} If an error occurs during extraction.
+ */
 async function extractQuotedMessage(message) {
     try {
         const messageType = Object.keys(message.message || {})[0];

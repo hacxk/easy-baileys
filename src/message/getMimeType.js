@@ -1,3 +1,12 @@
+/**
+ * Extracts the MIME type from a given message or its quoted message if applicable.
+ * 
+ * @async
+ * @function extractMimeType
+ * @param {object} message - The message object from which to extract the MIME type.
+ * @returns {Promise<string|null>} The extracted MIME type, or null if not found.
+ * @throws {Error} If an error occurs during extraction.
+ */
 async function extractMimeType(message) {
     try {
         const messageType = Object.keys(message.message || {})[0];

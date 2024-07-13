@@ -5,7 +5,21 @@ const { randomBytes } = require("crypto");
 const { performance } = require('perf_hooks');
 const { EventEmitter } = require('events');
 
+/**
+ * Class representing an advanced authentication state stored in a MongoDB collection.
+ * @extends EventEmitter
+ */
 class AdvancedMongoAuthState extends EventEmitter {
+  /**
+   * Creates an instance of AdvancedMongoAuthState.
+   * @param {Object} collection - The MongoDB collection to store authentication data.
+   * @param {Object} [options={}] - Optional configuration options.
+   * @param {Object} [options.logger=console] - Logger for logging messages.
+   * @param {number} [options.cacheSize=100] - Maximum size of the cache.
+   * @param {number} [options.cacheTTL=300000] - Time-to-live for cache entries in milliseconds.
+   * @param {number} [options.retryAttempts=3] - Number of retry attempts for write operations.
+   * @param {number} [options.retryDelay=1000] - Delay between retry attempts in milliseconds.
+   */
   constructor(collection, options = {}) {
     super();
     this.collection = collection;
@@ -19,12 +33,20 @@ class AdvancedMongoAuthState extends EventEmitter {
     this.retryDelay = options.retryDelay || 1000;
   }
 
+  /**
+   * Initializes the authentication state.
+   * @async
+   */
   async init() {
     this.creds = await this.readData("creds") || this.initAuthCreds();
     this.startWriteQueueProcessor();
     this.startCacheCleanup();
   }
 
+  /**
+   * Initializes the authentication credentials.
+   * @returns {Object} The initial authentication credentials.
+   */
   initAuthCreds() {
     const identityKey = Curve.generateKeyPair();
     return {
@@ -55,6 +77,9 @@ class AdvancedMongoAuthState extends EventEmitter {
     };
   }
 
+  /**
+   * Starts the cache cleanup process.
+   */
   startCacheCleanup() {
     setInterval(() => {
       const now = Date.now();
@@ -66,6 +91,9 @@ class AdvancedMongoAuthState extends EventEmitter {
     }, this.cacheTTL);
   }
 
+  /**
+   * Starts the write queue processor.
+   */
   startWriteQueueProcessor() {
     setInterval(async () => {
       if (this.isWriting || this.writeQueue.length === 0) return;
@@ -82,6 +110,13 @@ class AdvancedMongoAuthState extends EventEmitter {
     }, 100);
   }
 
+  /**
+   * Performs a write operation with retry logic.
+   * @param {Object} data - The data to write.
+   * @param {string} id - The ID of the data to write.
+   * @param {number} [attempt=1] - The current attempt number.
+   * @async
+   */
   async performWrite(data, id, attempt = 1) {
     const start = performance.now();
     try {
@@ -114,6 +149,12 @@ class AdvancedMongoAuthState extends EventEmitter {
     }
   }
 
+  /**
+   * Reads data from the collection.
+   * @param {string} id - The ID of the data to read.
+   * @returns {Promise<Object|null>} The data read from the collection, or null if not found.
+   * @async
+   */
   async readData(id) {
     const start = performance.now();
     try {
@@ -135,6 +176,11 @@ class AdvancedMongoAuthState extends EventEmitter {
     }
   }
 
+  /**
+   * Removes data from the collection.
+   * @param {string} id - The ID of the data to remove.
+   * @async
+   */
   async removeData(id) {
     const start = performance.now();
     try {
@@ -148,6 +194,10 @@ class AdvancedMongoAuthState extends EventEmitter {
     }
   }
 
+  /**
+   * Returns the key-value store interface for the keys.
+   * @returns {Object} The key-value store interface.
+   */
   async keys() {
     return {
       get: async (type, ids) => {
@@ -186,6 +236,10 @@ class AdvancedMongoAuthState extends EventEmitter {
     };
   }
 
+  /**
+   * Saves the authentication credentials.
+   * @returns {Promise<void>} A promise that resolves when the credentials are saved.
+   */
   saveCreds() {
     return new Promise((resolve, reject) => {
       this.writeQueue.push({
@@ -198,6 +252,10 @@ class AdvancedMongoAuthState extends EventEmitter {
   }
 }
 
+/**
+ * Buffer JSON utility for serialization and deserialization.
+ * @type {Object}
+ */
 const BufferJSON = {
   replacer: (k, value) => {
     if (Buffer.isBuffer(value) || value instanceof Uint8Array || value?.type === "Buffer") {
@@ -233,6 +291,12 @@ const BufferJSON = {
   },
 };
 
+/**
+ * Initializes the AdvancedMongoAuthState and returns the state and saveCreds function.
+ * @param {Object} collection - The MongoDB collection to store authentication data.
+ * @param {Object} [options={}] - Optional configuration options.
+ * @returns {Promise<Object>} The state and saveCreds function.
+ */
 module.exports = async (collection, options = {}) => {
   const authState = new AdvancedMongoAuthState(collection, options);
   await authState.init();
