@@ -8,6 +8,14 @@
 
 **easy-baileys** is a Node.js package designed to streamline WhatsApp connectivity and automate message handling, offering robust flexibility. It leverages the powerful capabilities of [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys).
 
+## ✨ GIVE A STAR ON GITHUB ⭐
+
+[easy-baileys](https://github.com/hacxk/easy-baileys)
+
+# IF YOU FOUND ANY ISSUE OR NEED A NEW FEATURES FEEL FREE TO OPEN A ISSUE ON GITHUB
+
+[easy-baileys](https://github.com/hacxk/easy-baileys)
+
 ## Installation 📦
 
 ```bash
