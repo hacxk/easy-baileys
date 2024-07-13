@@ -277,83 +277,44 @@ The `connMessage` class provides methods to interact with WhatsApp messages, inc
 
 
 | Function | Parameters | Description |
-
 |----------|------------|-------------|
-
 | `sendSticker` | `m`, `bufferOrUrl` | Sends a sticker message. |
-
 | `sendStickerReply` | `m`, `bufferOrUrl` | Sends a sticker as a reply to a message. |
-
 | `sendImage` | `m`, `bufferOrUrl`, `caption` | Sends an image message with an optional caption. |
-
 | `sendImageReply` | `m`, `bufferOrUrl`, `caption` | Sends an image as a reply to a message. |
-
 | `sendVideo` | `m`, `bufferOrUrl`, `caption` | Sends a video message with an optional caption. |
-
 | `sendVideoReply` | `m`, `bufferOrUrl`, `caption` | Sends a video as a reply to a message. |
-
 | `sendDocument` | `m`, `bufferOrUrl`, `mimetype`, `fileName`, `caption` | Sends a document message. |
-
 | `sendDocumentReply` | `m`, `bufferOrUrl`, `mimetype`, `fileName`, `caption` | Sends a document as a reply to a message. |
-
 | `sendAudio` | `m`, `bufferOrUrl`, `ptt` | Sends an audio message, optionally as push-to-talk. |
-
-| `sendAudioReply` | `m`, `bufferOrUrl`, `ptt` | Sends an audio message as a reply, optionally as push-to-talk. |
-
+| `sendAudioReply` | `m`, `bufferOrUrl`, `ptt` | Sends an audio message as a reply, optionally as push-to-talk. 
 | `sendGif` | `m`, `bufferOrUrl`, `playback` | Sends a GIF message. |
-
 | `sendGifReply` | `m`, `bufferOrUrl`, `playback` | Sends a GIF as a reply to a message. |
-
 | `reply` | `m`, `text` | Replies to a message with text. |
-
 | `send` | `m`, `text` | Sends a text message. |
-
 | `react` | `m`, `emoji` | Reacts to a message with an emoji. |
-
 | `editMsg` | `m`, `sentMessage`, `newMessage` | Edits a sent message. |
-
 | `deleteMsgGroup` | `m` | Deletes a message in a group chat. |
-
 | `deleteMsg` | `m` | Deletes a message. |
-
 | `findValue` | `obj`, `targetValue`, `currentPath` | Recursively finds a path to a value in an object. |
-
 | `findObject` | `obj`, `targetValue` | Recursively finds an object containing a specific value. |
-
 | `add` | `groupJid`, `participantJid` | Adds a participant to a group. |
-
 | `remove` | `groupJid`, `participantJid` | Removes a participant from a group. |
-
 | `isAdmin` | `groupJid` | Checks if the bot is an admin in a group. |
-
 | `updateParticipantStatus` | `groupJid`, `participantJid`, `action` | Promotes or demotes a participant in a group. |
-
 | `updateGroupSettings` | `groupJid`, `settings` | Updates group settings. |
-
 | `banUser` | `groupJid`, `userJid` | Bans a user from joining a group. |
-
 | `unbanUser` | `groupJid`, `userJid` | Unbans a user from a group. |
-
 | `generateInviteLink` | `groupJid` | Generates a new invite link for a group. |
-
 | `revokeInviteLink` | `groupJid` | Revokes the current invite link for a group. |
-
 | `updateGroupSubject` | `groupJid`, `newSubject` | Updates the group subject (name). |
-
 | `updateGroupDescription` | `groupJid`, `newDescription` | Updates the group description. |
-
 | `updateGroupMessagesSettings` | `groupJid`, `setting` | Updates who can send messages in the group. |
-
 | `scheduleMessage` | `jid`, `content`, `sendTime` | Schedules a message to be sent at a specific time. |
-
 | `cancelScheduledMessage` | `index` | Cancels a scheduled message. |
-
 | `sendBulkMessage` | `jids`, `content` | Sends a message to multiple recipients. |
-
 | `downloadMedia` | `m` | Downloads media from a message. |
-
 | `createPoll` | `groupJid`, `question`, `options` | Creates a poll in a group chat. |
-
 | `updateStatus` | `status` | Updates the bot's status. |
 
 
