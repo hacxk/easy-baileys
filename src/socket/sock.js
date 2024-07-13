@@ -108,7 +108,7 @@ class WhatsAppClient {
             });
 
             this.msgOption = new connMessage(this.sock);
-         
+
             for (const funcName of Object.getOwnPropertyNames(connMessage.prototype)) {
                 if (funcName !== 'constructor') {
                     this.sock[funcName] = connMessage.prototype[funcName].bind(this.sock);
@@ -125,7 +125,9 @@ class WhatsAppClient {
                     const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
                     console.log('connection closed due to', lastDisconnect?.error, ', reconnecting', shouldReconnect);
                     if (shouldReconnect) {
-                        // Reconnect logic
+                        this.initSocket(creds, keys);
+                    } else {
+                        console.log('Connection closed. You are logged out.')
                     }
                 } else if (connection === 'open') {
                     console.log('opened connection');
