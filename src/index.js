@@ -12,7 +12,12 @@ const {
     streamToBuffer,
     getQuotedMedia
 } = require('./message/downloadMedia');
-const connMessage  = require('./message/connMessage');
+const connMessage = require('./message/connMessage');
+const {
+    loadCommands,
+    getCommand,
+    getAllCommands
+} = require('./utils/loadCommand');
 
 module.exports = {
     WhatsAppClient,
@@ -26,5 +31,8 @@ module.exports = {
     downloadQuotedMediaMessage,
     streamToBuffer,
     getQuotedMedia,
-    extractResponseTextContent
+    extractResponseTextContent,
+    loadCommands,
+    getCommand,
+    getAllCommands
 };

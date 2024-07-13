@@ -545,6 +545,109 @@ try {
 
 ---
 
+# Setting Up Commands with easy-baileys
+
+To create and manage commands for your WhatsApp bot using `easy-baileys`, follow these steps:
+
+1. **Import `loadCommands` and `getCommand`** from `easy-baileys` to manage your bot commands:
+
+   ```javascript
+   const { loadCommands, getCommand } = require('easy-baileys');
+   ```
+
+2. **Loading Commands:**
+   
+   Use `loadCommands` to load commands from a specified directory. Example:
+
+   ```javascript
+   // Load commands from the specified directory
+   await loadCommands('./commands');
+   ```
+
+3. **Handling Commands:**
+
+   Use `getCommand` to retrieve and execute commands based on incoming messages. Example:
+
+   ```javascript
+   // Listen for new messages
+   sock.ev.on("messages.upsert", async ({ messages }) => {
+       for (const m of messages) {
+           const { message } = m;
+           const messageTypes = ['extendedTextMessage', 'conversation', 'imageMessage', 'videoMessage'];
+
+           // Extract text from the message if it matches any of the specified types
+           let text = messageTypes.reduce((acc, type) =>
+               acc || (message[type] && (message[type].text || message[type].caption || message[type])) || '', '');
+
+           // Convert the extracted text to lowercase for processing
+           const response = text.toLowerCase();
+           const prefix = ['!']; // Prefixes to identify commands
+
+           // Check if the message starts with the prefix
+           if (!prefix.some(p => response.startsWith(p))) {
+               continue;
+           }
+
+           // Parse command name and arguments
+           const [commandName, ...args] = response.slice(prefix.length).trim().split(/\s+/);
+
+           // Get the corresponding command handler
+           const command = await getCommand(commandName);
+
+           // If the command is not found, log and continue
+           if (!command) {
+               console.log(`Command not found: ${commandName}`);
+               continue;
+           }
+
+           // Execute the command
+           try {
+               await command.execute(sock, m, args);
+           } catch (cmdError) {
+               console.error(`Error executing command '${commandName}':`, cmdError.message);
+           }
+       }
+   });
+   ```
+
+### Example Command File Structure
+
+Here's an example structure for a `Ping` command (`command/Ping.js`):
+
+```javascript
+module.exports = {
+    usage: ["ping"],
+    desc: "Checks the bot's response time.",
+    commandType: "Bot",
+    isGroupOnly: false,
+    isAdminOnly: false,
+    isPrivateOnly: false,
+    emoji: '🏓', // Ping pong emoji for fun
+
+    async execute(sock, m) {
+        try {
+            // Get the timestamp before sending the message
+            const startTime = Date.now();
+            const latency = Date.now() - startTime;
+            await sock.reply(m, `🚀 Pong! ${latency}ms`);
+        } catch (error) {
+            await sock.reply(m, "❌ An error occurred while checking the ping: " + error);
+        }
+    }
+};
+```
+
+### Command Metadata Explanation:
+
+- **`usage`:** Array of strings defining how users can invoke the command.
+- **`desc`:** Brief description of what the command does.
+- **`commandType`:** Type of command (e.g., Bot, Admin).
+- **`isGroupOnly`:** Whether the command works only in group chats.
+- **`isAdminOnly`:** Whether the command is restricted to admins.
+- **`isPrivateOnly`:** Whether the command can only be used in private chats.
+- **`emoji`:** Emoji associated with the command for visual appeal.
+
+Now you're all set to create and manage commands for your WhatsApp bot using `easy-baileys`! 🚀✨
 
 
 ### Configuration Options ⚙️
