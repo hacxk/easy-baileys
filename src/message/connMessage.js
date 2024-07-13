@@ -487,6 +487,354 @@ class connMessage {
         }
     }
 
+    /**
+   * Adds a participant to a group.
+   * @param {string} groupJid - The JID of the group.
+   * @param {string} participantJid - The JID of the participant to add.
+   * @throws {Error} - If the bot is not an admin or there's an error adding the participant.
+   */
+    async add(groupJid, participantJid) {
+        try {
+            const groupMetadata = await socks.groupMetadata(groupJid);
+
+            // Check if the bot is an admin
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupParticipantsUpdate(groupJid, [participantJid], "add");
+        } catch (err) {
+            throw new Error(`Error adding participant: ${err.message}`);
+        }
+    }
+
+    /**
+     * Removes a participant from a group.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} participantJid - The JID of the participant to remove.
+     * @throws {Error} - If the bot is not an admin or there's an error removing the participant.
+     */
+    async remove(groupJid, participantJid) {
+        try {
+            const groupMetadata = await socks.groupMetadata(groupJid);
+
+            // Check if the bot is an admin
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupParticipantsUpdate(groupJid, [participantJid], "remove");
+        } catch (err) {
+            throw new Error(`Error removing participant: ${err.message}`);
+        }
+    }
+
+    /**
+     * Checks if the bot is an admin in a group.
+     * @param {string} groupJid - The JID of the group.
+     * @returns {Promise<boolean>} - True if the bot is an admin, false otherwise.
+     * @throws {Error} - If there's an error fetching group metadata.
+     */
+    async isAdmin(groupJid) {
+        try {
+            const groupMetadata = await socks.groupMetadata(groupJid);
+            const botJid = socks.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
+            return groupMetadata.participants.some(p => p.id === botJid && p.admin);
+        } catch (err) {
+            throw new Error(`Error checking admin status: ${err.message}`);
+        }
+    }
+
+    /**
+     * Promotes or demotes a participant in a group.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} participantJid - The JID of the participant to promote/demote.
+     * @param {string} action - Either "promote" or "demote".
+     * @throws {Error} - If the bot is not an admin or there's an error updating the participant's status.
+     */
+    async updateParticipantStatus(groupJid, participantJid, action) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            if (action !== "promote" && action !== "demote") {
+                throw new Error("Invalid action. Use 'promote' or 'demote'.");
+            }
+
+            await socks.groupParticipantsUpdate(groupJid, [participantJid], action);
+        } catch (err) {
+            throw new Error(`Error ${action}ing participant: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates group settings.
+     * @param {string} groupJid - The JID of the group.
+     * @param {object} settings - An object containing the settings to update.
+     * @throws {Error} - If the bot is not an admin or there's an error updating the group settings.
+     */
+    async updateGroupSettings(groupJid, settings) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupSettingUpdate(groupJid, settings);
+        } catch (err) {
+            throw new Error(`Error updating group settings: ${err.message}`);
+        }
+    }
+
+    /**
+     * Bans a user from joining a group.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} userJid - The JID of the user to ban.
+     * @throws {Error} - If the bot is not an admin or there's an error banning the user.
+     */
+    async banUser(groupJid, userJid) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupParticipantsUpdate(groupJid, [userJid], "remove");
+            // Note: There's no direct "ban" function in Baileys, so we remove and then could maintain a ban list
+        } catch (err) {
+            throw new Error(`Error banning user: ${err.message}`);
+        }
+    }
+
+    /**
+     * Unbans a user from a group.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} userJid - The JID of the user to unban.
+     * @throws {Error} - If the bot is not an admin or there's an error unbanning the user.
+     */
+    async unbanUser(groupJid, userJid) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            // Note: This would involve removing the user from a maintained ban list
+            // For now, we'll just simulate unbanning by allowing them to be added back
+            await socks.groupParticipantsUpdate(groupJid, [userJid], "add");
+        } catch (err) {
+            throw new Error(`Error unbanning user: ${err.message}`);
+        }
+    }
+
+    /**
+     * Generates a new invite link for a group.
+     * @param {string} groupJid - The JID of the group.
+     * @returns {Promise<string>} - The new invite link.
+     * @throws {Error} - If the bot is not an admin or there's an error generating the invite link.
+     */
+    async generateInviteLink(groupJid) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            const inviteCode = await socks.groupInviteCode(groupJid);
+            return `https://chat.whatsapp.com/${inviteCode}`;
+        } catch (err) {
+            throw new Error(`Error generating invite link: ${err.message}`);
+        }
+    }
+
+    /**
+     * Revokes the current invite link for a group.
+     * @param {string} groupJid - The JID of the group.
+     * @returns {Promise<string>} - The new invite link after revocation.
+     * @throws {Error} - If the bot is not an admin or there's an error revoking the invite link.
+     */
+    async revokeInviteLink(groupJid) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupRevokeInvite(groupJid);
+            return await this.generateInviteLink(groupJid);
+        } catch (err) {
+            throw new Error(`Error revoking invite link: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates the group subject (name).
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} newSubject - The new subject for the group.
+     * @throws {Error} - If the bot is not an admin or there's an error updating the group subject.
+     */
+    async updateGroupSubject(groupJid, newSubject) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupUpdateSubject(groupJid, newSubject);
+        } catch (err) {
+            throw new Error(`Error updating group subject: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates the group description.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} newDescription - The new description for the group.
+     * @throws {Error} - If the bot is not an admin or there's an error updating the group description.
+     */
+    async updateGroupDescription(groupJid, newDescription) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            await socks.groupUpdateDescription(groupJid, newDescription);
+        } catch (err) {
+            throw new Error(`Error updating group description: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates who can send messages in the group.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} setting - The new setting: 'all' or 'admin'.
+     * @throws {Error} - If the bot is not an admin or there's an error updating the group settings.
+     */
+    async updateGroupMessagesSettings(groupJid, setting) {
+        try {
+            if (!await this.isAdmin(groupJid)) {
+                throw new Error("I'm not an admin in this group.");
+            }
+
+            if (setting !== 'all' && setting !== 'admin') {
+                throw new Error("Invalid setting. Use 'all' or 'admin'.");
+            }
+
+            await socks.groupSettingUpdate(groupJid, setting);
+        } catch (err) {
+            throw new Error(`Error updating group message settings: ${err.message}`);
+        }
+    }
+
+     /**
+     * Schedules a message to be sent at a specific time.
+     * @param {string} jid - The JID of the recipient.
+     * @param {object} content - The content of the message.
+     * @param {Date} sendTime - The time to send the message.
+     * @throws {Error} - If there's an error scheduling the message.
+     */
+     async scheduleMessage(jid, content, sendTime) {
+        try {
+            const now = new Date();
+            if (sendTime <= now) {
+                throw new Error("Scheduled time must be in the future.");
+            }
+
+            const timeoutId = setTimeout(async () => {
+                await this.send({ key: { remoteJid: jid } }, content);
+                this.scheduledMessages = this.scheduledMessages.filter(msg => msg.timeoutId !== timeoutId);
+            }, sendTime - now);
+
+            this.scheduledMessages.push({ jid, content, sendTime, timeoutId });
+        } catch (err) {
+            throw new Error(`Error scheduling message: ${err.message}`);
+        }
+    }
+
+    /**
+     * Cancels a scheduled message.
+     * @param {number} index - The index of the scheduled message to cancel.
+     * @throws {Error} - If there's an error cancelling the scheduled message.
+     */
+    cancelScheduledMessage(index) {
+        try {
+            if (index < 0 || index >= this.scheduledMessages.length) {
+                throw new Error("Invalid scheduled message index.");
+            }
+
+            clearTimeout(this.scheduledMessages[index].timeoutId);
+            this.scheduledMessages.splice(index, 1);
+        } catch (err) {
+            throw new Error(`Error cancelling scheduled message: ${err.message}`);
+        }
+    }
+
+    /**
+     * Sends a message to multiple recipients.
+     * @param {string[]} jids - Array of JIDs to send the message to.
+     * @param {object} content - The content of the message.
+     * @throws {Error} - If there's an error sending the bulk message.
+     */
+    async sendBulkMessage(jids, content) {
+        try {
+            const results = await Promise.allSettled(
+                jids.map(jid => this.send({ key: { remoteJid: jid } }, content))
+            );
+
+            const failures = results.filter(result => result.status === 'rejected');
+            if (failures.length > 0) {
+                console.warn(`Failed to send message to ${failures.length} recipients.`);
+            }
+        } catch (err) {
+            throw new Error(`Error sending bulk message: ${err.message}`);
+        }
+    }
+
+    /**
+     * Downloads media from a message.
+     * @param {object} m - The message object containing media.
+     * @returns {Promise<Buffer>} - The downloaded media as a buffer.
+     * @throws {Error} - If there's an error downloading the media.
+     */
+    async downloadMedia(m) {
+        try {
+            const buffer = await socks.downloadMediaMessage(m);
+            return buffer;
+        } catch (err) {
+            throw new Error(`Error downloading media: ${err.message}`);
+        }
+    }
+
+
+    /**
+     * Creates a poll in a group chat.
+     * @param {string} groupJid - The JID of the group.
+     * @param {string} question - The poll question.
+     * @param {string[]} options - Array of poll options.
+     * @throws {Error} - If there's an error creating the poll.
+     */
+    async createPoll(groupJid, question, options) {
+        try {
+            await socks.sendMessage(groupJid, {
+                poll: {
+                    name: question,
+                    values: options,
+                    selectableCount: 1
+                }
+            });
+        } catch (err) {
+            throw new Error(`Error creating poll: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates the bot's status.
+     * @param {string} status - The new status text.
+     * @throws {Error} - If there's an error updating the status.
+     */
+    async updateStatus(status) {
+        try {
+            await socks.updateProfileStatus(status);
+        } catch (err) {
+            throw new Error(`Error updating status: ${err.message}`);
+        }
+    }
+
 }
 
 module.exports = connMessage;
