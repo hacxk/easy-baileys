@@ -30,7 +30,10 @@ class WhatsAppClient {
      * Initializes MongoDB authentication.
      * @param {string} pathAuthFile - Path to the MongoDB authentication file.
      */
-    async initMongoAuth(pathAuthFile) {
+    async initMongoAuth(pathAuthFile, collectionName) {
+        if (!collectionName) {
+            throw new Error('Please provide a Collection name to Save/Retrive Session!')
+        }
         const mongoClient = new MongoClient(pathAuthFile, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -39,7 +42,7 @@ class WhatsAppClient {
         await mongoClient.connect();
 
         const db = mongoClient.db("v42ef24t4ew");
-        const collection = db.collection("v43vdv4wetds");
+        const collection = db.collection(collectionName);
 
         const { state, saveCreds } = await useMongoDBAuthState(collection);
         this.state = state;
@@ -81,8 +84,10 @@ class WhatsAppClient {
         const getMessage = async (key) => {
             if (store) {
                 const msg = await store.loadMessage(key.remoteJid, key.id);
-                return msg && msg.message ? msg.message : undefined;
+                return msg?.message || undefined;
             }
+
+            // only if store is present
             return proto.Message.fromObject({});
         };
 
@@ -188,9 +193,9 @@ class WhatsAppClient {
      * @param {object} [customOptions={}] - Custom options for the client.
      * @returns {Promise<WhatsAppClient>} - A new WhatsAppClient instance.
      */
-    static async createMongoAuth(pathAuthFile, customOptions = {}) {
+    static async createMongoAuth(pathAuthFile, collection, customOptions = {}) {
         const client = new WhatsAppClient(customOptions);
-        await client.initMongoAuth(pathAuthFile);
+        await client.initMongoAuth(pathAuthFile, collection);
         return client;
     }
 

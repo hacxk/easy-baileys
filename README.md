@@ -45,7 +45,7 @@ const customOptions = {
 (async () => {
   try {
     // Initialize WhatsAppClient with MongoDB authentication
-    const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', customOptions);
+    const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', 'collectionname', customOptions);
     const sockMongo = await clientMongo.getSocket();
 
     // Example event listener for incoming messages
