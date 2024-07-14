@@ -1,6 +1,4 @@
-const { delay } = require('@whiskeysockets/baileys');
-
-let socks;
+let fetch;
 
 /**
  * Sends a message with a presence update.
@@ -11,9 +9,9 @@ let socks;
  * @returns {Promise<object>} - The response from the sendMessage function.
  * @throws {Error} - If there is an error sending the message.
  */
-const sendMessage = async (jid, content, options = {}) => {
+const sendMessage = async (sock, jid, content, options = {}) => {
     try {
-        return await socks.sendMessage(jid, content, options);
+        return await sock.sendMessage(jid, content, options);
     } catch (err) {
         throw new Error(`Error sending message: ${err.message}`);
     }
@@ -29,9 +27,9 @@ const sendMessage = async (jid, content, options = {}) => {
  * @returns {Promise<object>} - The response from the sendMessageQuoted function.
  * @throws {Error} - If there is an error sending the quoted message.
  */
-const sendMessageQuoted = async (jid, m, content, options = {}) => {
+const sendMessageQuoted = async (sock, jid, m, content, options = {}) => {
     try {
-        return await socks.sendMessage(jid, content, { ...options, quoted: m });
+        return await sock.sendMessage(jid, content, { ...options, quoted: m });
     } catch (err) {
         throw new Error(`Error sending quoted message: ${err.message}`);
     }
@@ -43,11 +41,17 @@ const sendMessageQuoted = async (jid, m, content, options = {}) => {
 class connMessage {
     /**
    * Creates a new connMessage instance.
-   * @param {object} sock - The Baileys socket instance.
    */
-    constructor(sock) { // Add sock as a parameter
-        this.sock = sock;
-        socks = sock;
+    constructor() { // Add sock as a parameter
+        fetch = import('node-fetch');
+        this.scheduledMessages = [];
+        // Bind all methods to the instance
+        const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+            .filter(method => typeof this[method] === 'function' && method !== 'constructor');
+
+        methods.forEach(method => {
+            this[method] = this[method].bind(this);
+        });
     }
 
     /**
@@ -60,7 +64,7 @@ class connMessage {
     async sendSticker(m, bufferOrUrl) {
         try {
             const jid = m.key.remoteJid;
-            await sendMessage(jid, { sticker: bufferOrUrl });
+            await sendMessage(this, jid, { sticker: bufferOrUrl });
         } catch (err) {
             throw new Error(`Error in sendSticker: ${err.message}`);
         }
@@ -76,7 +80,7 @@ class connMessage {
     async sendStickerReply(m, bufferOrUrl) {
         try {
             const jid = m.key.remoteJid;
-            await sendMessageQuoted(jid, m, { sticker: bufferOrUrl });
+            await sendMessageQuoted(this, jid, m, { sticker: bufferOrUrl });
         } catch (err) {
             throw new Error(`Error in sendStickerReply: ${err.message}`);
         }
@@ -96,7 +100,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { image: { url: bufferOrUrl }, caption }
                 : { image: bufferOrUrl, caption };
-            await sendMessage(jid, options);
+            await sendMessage(this, jid, options);
         } catch (err) {
             throw new Error(`Error in sendImage: ${err.message}`);
         }
@@ -116,7 +120,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { image: { url: bufferOrUrl }, caption }
                 : { image: bufferOrUrl, caption };
-            await sendMessageQuoted(jid, m, options);
+            await sendMessageQuoted(this, jid, m, options);
         } catch (err) {
             throw new Error(`Error in sendImageReply: ${err.message}`);
         }
@@ -136,7 +140,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { video: { url: bufferOrUrl }, caption }
                 : { video: bufferOrUrl, caption };
-            await sendMessage(jid, options);
+            await sendMessage(this, jid, options);
         } catch (err) {
             throw new Error(`Error in sendVideo: ${err.message}`);
         }
@@ -156,7 +160,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { video: { url: bufferOrUrl }, caption }
                 : { video: bufferOrUrl, caption };
-            await sendMessageQuoted(jid, m, options);
+            await sendMessageQuoted(this, jid, m, options);
         } catch (err) {
             throw new Error(`Error in sendVideoReply: ${err.message}`);
         }
@@ -178,7 +182,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { document: { url: bufferOrUrl }, mimetype, fileName, caption }
                 : { document: bufferOrUrl, mimetype, fileName, caption };
-            await sendMessage(jid, options);
+            await sendMessage(this, jid, options);
         } catch (err) {
             throw new Error(`Error in sendDocument: ${err.message}`);
         }
@@ -200,7 +204,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { document: { url: bufferOrUrl }, mimetype, fileName, caption }
                 : { document: bufferOrUrl, mimetype, fileName, caption };
-            await sendMessageQuoted(jid, m, options);
+            await sendMessageQuoted(this, jid, m, options);
         } catch (err) {
             throw new Error(`Error in sendDocumentReply: ${err.message}`);
         }
@@ -220,7 +224,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { audio: { url: bufferOrUrl }, ptt, mimetype: 'audio/mpeg' }
                 : { audio: bufferOrUrl, ptt, mimetype: 'audio/mpeg' };
-            await sendMessage(jid, options);
+            await sendMessage(this, jid, options);
         } catch (err) {
             throw new Error(`Error in sendAudio: ${err.message}`);
         }
@@ -240,7 +244,7 @@ class connMessage {
             const options = typeof bufferOrUrl === 'string'
                 ? { audio: { url: bufferOrUrl }, ptt, mimetype: 'audio/mpeg' }
                 : { audio: bufferOrUrl, ptt, mimetype: 'audio/mpeg' };
-            await sendMessageQuoted(jid, m, options);
+            await sendMessageQuoted(this, jid, m, options);
         } catch (err) {
             throw new Error(`Error in sendAudioReply: ${err.message}`);
         }
@@ -264,7 +268,7 @@ class connMessage {
             } else {
                 gifBuffer = bufferOrUrl;
             }
-            await sendMessage(jid, { video: gifBuffer, gifPlayback: playback });
+            await sendMessage(this, jid, { video: gifBuffer, gifPlayback: playback });
         } catch (err) {
             throw new Error(`Error in sendGif: ${err.message}`);
         }
@@ -288,7 +292,7 @@ class connMessage {
             } else {
                 gifBuffer = bufferOrUrl;
             }
-            await sendMessageQuoted(jid, m, { video: gifBuffer, gifPlayback: playback });
+            await sendMessageQuoted(this, jid, m, { video: gifBuffer, gifPlayback: playback });
         } catch (err) {
             throw new Error(`Error in sendGifReply: ${err.message}`);
         }
@@ -303,7 +307,7 @@ class connMessage {
      */
     async reply(m, text) {
         try {
-            await sendMessage(m.key.remoteJid, { text }, { quoted: m });
+            await sendMessage(this, m.key.remoteJid, { text }, { quoted: m });
         } catch (err) {
             throw new Error(`Error in reply: ${err.message}`);
         }
@@ -318,7 +322,7 @@ class connMessage {
      */
     async send(m, text) {
         try {
-            await sendMessage(m.key.remoteJid, { text });
+            await sendMessage(this, m.key.remoteJid, { text });
         } catch (err) {
             throw new Error(`Error in send: ${err.message}`);
         }
@@ -333,7 +337,7 @@ class connMessage {
      */
     async react(m, emoji) {
         try {
-            await sendMessage(m.key.remoteJid, { react: { text: emoji, key: m.key } });
+            await sendMessage(this, m.key.remoteJid, { react: { text: emoji, key: m.key } });
         } catch (err) {
             throw new Error(`Error in react: ${err.message}`);
         }
@@ -349,7 +353,7 @@ class connMessage {
      */
     async editMsg(m, sentMessage, newMessage) {
         try {
-            await sendMessage(m.key.remoteJid, { edit: sentMessage.key, text: newMessage, type: "MESSAGE_EDIT" });
+            await sendMessage(this, m.key.remoteJid, { edit: sentMessage.key, text: newMessage, type: "MESSAGE_EDIT" });
         } catch (err) {
             throw new Error(`Error in editMsg: ${err.message}`);
         }
@@ -365,8 +369,8 @@ class connMessage {
     async deleteMsgGroup(m) {
         try {
             const { remoteJid } = m.key;
-            const groupMetadata = await socks.groupMetadata(remoteJid);
-            const botId = socks.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
+            const groupMetadata = await this.groupMetadata(remoteJid);
+            const botId = this.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
             const botIsAdmin = groupMetadata.participants.some(p => p.id.includes(botId) && p.admin);
 
             if (!botIsAdmin) {
@@ -385,8 +389,8 @@ class connMessage {
                 }
             };
 
-            const response = await socks.sendMessage(remoteJid, { delete: messageToDelete.key });
-            await socks.sendMessage(remoteJid, { delete: m.key });
+            const response = await this.sendMessage(remoteJid, { delete: messageToDelete.key });
+            await this.sendMessage(remoteJid, { delete: m.key });
             return response;
         } catch (err) {
             throw new Error(`Error in deleteMsgGroup: ${err.message}`);
@@ -416,8 +420,8 @@ class connMessage {
             };
 
 
-            const response = await socks.sendMessage(remoteJid, { delete: messageToDelete.key });
-            await socks.sendMessage(remoteJid, { delete: m.key });
+            const response = await this.sendMessage(remoteJid, { delete: messageToDelete.key });
+            await this.sendMessage(remoteJid, { delete: m.key });
             return response;
         } catch (err) {
             throw new Error(`Error in deleteMsg: ${err.message}`);
@@ -495,14 +499,14 @@ class connMessage {
    */
     async add(groupJid, participantJid) {
         try {
-            const groupMetadata = await socks.groupMetadata(groupJid);
+            const groupMetadata = await this.groupMetadata(groupJid);
 
             // Check if the bot is an admin
             if (!await this.isAdmin(groupJid)) {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupParticipantsUpdate(groupJid, [participantJid], "add");
+            await this.groupParticipantsUpdate(groupJid, [participantJid], "add");
         } catch (err) {
             throw new Error(`Error adding participant: ${err.message}`);
         }
@@ -516,14 +520,14 @@ class connMessage {
      */
     async remove(groupJid, participantJid) {
         try {
-            const groupMetadata = await socks.groupMetadata(groupJid);
+            const groupMetadata = await this.groupMetadata(groupJid);
 
             // Check if the bot is an admin
             if (!await this.isAdmin(groupJid)) {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupParticipantsUpdate(groupJid, [participantJid], "remove");
+            await this.groupParticipantsUpdate(groupJid, [participantJid], "remove");
         } catch (err) {
             throw new Error(`Error removing participant: ${err.message}`);
         }
@@ -537,8 +541,8 @@ class connMessage {
      */
     async isAdmin(groupJid) {
         try {
-            const groupMetadata = await socks.groupMetadata(groupJid);
-            const botJid = socks.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
+            const groupMetadata = await this.groupMetadata(groupJid);
+            const botJid = this.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
             return groupMetadata.participants.some(p => p.id === botJid && p.admin);
         } catch (err) {
             throw new Error(`Error checking admin status: ${err.message}`);
@@ -562,7 +566,7 @@ class connMessage {
                 throw new Error("Invalid action. Use 'promote' or 'demote'.");
             }
 
-            await socks.groupParticipantsUpdate(groupJid, [participantJid], action);
+            await this.groupParticipantsUpdate(groupJid, [participantJid], action);
         } catch (err) {
             throw new Error(`Error ${action}ing participant: ${err.message}`);
         }
@@ -580,7 +584,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupSettingUpdate(groupJid, settings);
+            await this.groupSettingUpdate(groupJid, settings);
         } catch (err) {
             throw new Error(`Error updating group settings: ${err.message}`);
         }
@@ -598,7 +602,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupParticipantsUpdate(groupJid, [userJid], "remove");
+            await this.groupParticipantsUpdate(groupJid, [userJid], "remove");
             // Note: There's no direct "ban" function in Baileys, so we remove and then could maintain a ban list
         } catch (err) {
             throw new Error(`Error banning user: ${err.message}`);
@@ -619,7 +623,7 @@ class connMessage {
 
             // Note: This would involve removing the user from a maintained ban list
             // For now, we'll just simulate unbanning by allowing them to be added back
-            await socks.groupParticipantsUpdate(groupJid, [userJid], "add");
+            await this.groupParticipantsUpdate(groupJid, [userJid], "add");
         } catch (err) {
             throw new Error(`Error unbanning user: ${err.message}`);
         }
@@ -637,7 +641,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            const inviteCode = await socks.groupInviteCode(groupJid);
+            const inviteCode = await this.groupInviteCode(groupJid);
             return `https://chat.whatsapp.com/${inviteCode}`;
         } catch (err) {
             throw new Error(`Error generating invite link: ${err.message}`);
@@ -656,7 +660,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupRevokeInvite(groupJid);
+            await this.groupRevokeInvite(groupJid);
             return await this.generateInviteLink(groupJid);
         } catch (err) {
             throw new Error(`Error revoking invite link: ${err.message}`);
@@ -675,7 +679,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupUpdateSubject(groupJid, newSubject);
+            await this.groupUpdateSubject(groupJid, newSubject);
         } catch (err) {
             throw new Error(`Error updating group subject: ${err.message}`);
         }
@@ -693,7 +697,7 @@ class connMessage {
                 throw new Error("I'm not an admin in this group.");
             }
 
-            await socks.groupUpdateDescription(groupJid, newDescription);
+            await this.groupUpdateDescription(groupJid, newDescription);
         } catch (err) {
             throw new Error(`Error updating group description: ${err.message}`);
         }
@@ -715,7 +719,7 @@ class connMessage {
                 throw new Error("Invalid setting. Use 'all' or 'admin'.");
             }
 
-            await socks.groupSettingUpdate(groupJid, setting);
+            await this.groupSettingUpdate(groupJid, setting);
         } catch (err) {
             throw new Error(`Error updating group message settings: ${err.message}`);
         }
@@ -793,7 +797,7 @@ class connMessage {
      */
     async downloadMedia(m) {
         try {
-            const buffer = await socks.downloadMediaMessage(m);
+            const buffer = await this.downloadMediaMessage(m);
             return buffer;
         } catch (err) {
             throw new Error(`Error downloading media: ${err.message}`);
@@ -810,7 +814,7 @@ class connMessage {
      */
     async createPoll(groupJid, question, options) {
         try {
-            await socks.sendMessage(groupJid, {
+            await this.sendMessage(groupJid, {
                 poll: {
                     name: question,
                     values: options,
@@ -829,7 +833,7 @@ class connMessage {
      */
     async updateStatus(status) {
         try {
-            await socks.updateProfileStatus(status);
+            await this.updateProfileStatus(status);
         } catch (err) {
             throw new Error(`Error updating status: ${err.message}`);
         }

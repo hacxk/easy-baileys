@@ -49,6 +49,7 @@
     "lodash.debounce": "^4.0.8",
     "mongodb": "^6.8.0",
     "mysql-baileys": "github:bobslavtriev/mysql-baileys",
+    "node-fetch": "^3.3.2",
     "qrcode-terminal": "^0.12.0"
   }
 }
