@@ -199,31 +199,47 @@ The QR code will be printed directly in your terminal.
 
 ```javascript
 
-const { WhatsAppClient } = require('easy-baileys');
+const { WhatsAppClient, extractTextContent } = require('easy-baileys');
 
 (async () => {
-    try {
-        const customOptions = {
-            browser: ["Ubuntu", "Chrome", "20.0.04"],
-            printQRInTerminal: true,
-            mobile: false,
-        };
+  try {
+    const customOptions = {
+      browser: ["Ubuntu", "Chrome", "20.0.04"],
+      printQRInTerminal: true, // Set to true for QR code in terminal
+      mobile: false,
+    };
 
-        const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
-        const conn = await client.getSocket();
+    const client = await WhatsAppClient.createMultiAuth('./hacxk', customOptions);
+    const sock = await client.getSocket();
 
-        conn.ev.on("messages.upsert", async ({ messages }) => {
-            for (const m of messages) {
-                if (m.message?.conversation.toLowerCase() === 'hi') {
-                    await conn.reply(m, 'Hello! 👋');
-                }
-            }
-        });
+    sock.ev.on("messages.update", async (update) => {
+      console.log(update);
+    });
 
-    } catch (error) {
-        console.error('Error initializing WhatsApp client:', error.message);
-    }
-})();```
+    sock.ev.on("messages.upsert", async ({ messages }) => {
+      for (const m of messages) {
+        const text = await extractTextContent(m);
+
+        switch (text.toLowerCase()) {
+          case 'hi':
+          case 'hello':
+          case 'hola':
+            await sock.readMessages([m.key])
+            await sock.reply(m, 'Hello! 👋');
+            break;
+          case 'bye':
+            await sock.readMessages([m.key])
+            await sock.reply(m, 'Bye! 👋. See ya Later!');
+            break;
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error initializing WhatsApp client:', error.message);
+  }
+})();
+
 ```
 
 
