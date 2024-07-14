@@ -31,7 +31,7 @@ npm install easy-baileys
 const { WhatsAppClient } = require('easy-baileys');
 ```
 
-### 2. Creating a Client Instance with MongoDB Authentication
+### 2. Creating a Client Instance with MongoDB Authentication (+ Multiple Session ✅)
 
 ```javascript
 const { WhatsAppClient } = require('easy-baileys');
@@ -63,7 +63,7 @@ const customOptions = {
 })();
 ```
 
-### 3. Creating a Client Instance with MySQL Authentication
+### 3. Creating a Client Instance with MySQL Authentication (+ Multiple Session ✅)
 
 ```javascript
 const { WhatsAppClient } = require('easy-baileys');
