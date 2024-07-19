@@ -6,7 +6,7 @@ const { useMySQLAuthState } = require('mysql-baileys'); // Import for MySQL auth
 const useMongoDBAuthState = require("../auth/MongoAuth");
 const connMessage = require("../message/connMessage");
 
-const logger = pino({ level: process.env.LOG_LEVEL || 'silent' });
+const logger = pino({ level: process.env.LOG_LEVEL || 'debug' });
 const store = makeInMemoryStore({ logger });
 
 /**
@@ -221,60 +221,6 @@ class WhatsAppClient {
         const client = new WhatsAppClient(customOptions);
         await client.initMySQLAuth(mysqlConfig);
         return client;
-    }
-
-    /**
-     * Deletes a message from a group.
-     * @param {object} m - The message object.
-     * @returns {Promise<object>} - The response from the delete operation.
-     */
-    async deleteMsgGroup(m) {
-        try {
-            const { remoteJid } = m.key;
-            const groupMetadata = await this.sock.groupMetadata(remoteJid);
-            const botId = this.sock.user.id.replace(/:.*$/, "") + "@s.whatsapp.net";
-            const botIsAdmin = groupMetadata.participants.some(p => p.id.includes(botId) && p.admin);
-
-            if (!botIsAdmin) throw new Error("I cannot delete messages because I am not an admin in this group.");
-
-            const isOwnMessage = m.key.participant === m?.message?.extendedTextMessage?.contextInfo?.participant;
-            const stanId = m?.message?.extendedTextMessage?.contextInfo?.stanzaId;
-
-            const messageToDelete = {
-                key: {
-                    remoteJid: m.key.remoteJid,
-                    fromMe: isOwnMessage,
-                    id: stanId,
-                    participant: m?.message?.extendedTextMessage?.contextInfo?.participant
-                }
-            };
-
-            await this.sock.sendPresenceUpdate('composing', remoteJid);
-            await delay(200);
-            const response = await this.sock.sendMessage(remoteJid, { delete: messageToDelete.key });
-            await delay(750);
-            await this.sock.sendMessage(remoteJid, { delete: m.key });
-            return response;
-        } catch (err) {
-            throw new Error(`Error in deleteMsgGroup: ${err.message}`);
-        }
-    }
-
-    /**
-     * Edits a sent message.
-     * @param {object} m - The original message object.
-     * @param {object} sentMessage - The sent message object.
-     * @param {string} newMessage - The new message text.
-     * @returns {Promise<object>} - The response from the edit operation.
-     */
-    async editMsg(m, sentMessage, newMessage) {
-        try {
-            await this.sock.sendPresenceUpdate('composing', m.key.remoteJid);
-            await delay(200);
-            return await this.sock.sendMessage(m.key.remoteJid, { edit: sentMessage.key, text: newMessage, type: "MESSAGE_EDIT" });
-        } catch (err) {
-            throw new Error(`Error in editMsg: ${err.message}`);
-        }
     }
 }
 

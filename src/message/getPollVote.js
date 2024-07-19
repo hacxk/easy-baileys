@@ -1,3 +1,5 @@
+const { getAggregateVotesInPollMessage } = require('@whiskeysockets/baileys')
+
 /**
  * Extracts poll vote message details from a given update.
  * 

@@ -56,7 +56,6 @@ class connMessage {
 
     /**
      * Sends a sticker message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the sticker.
      * @throws {Error} - If there is an error sending the sticker.
@@ -72,7 +71,6 @@ class connMessage {
 
     /**
      * Sends a sticker reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the sticker.
      * @throws {Error} - If there is an error sending the sticker reply.
@@ -88,7 +86,6 @@ class connMessage {
 
     /**
      * Sends an image message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the image.
      * @param {string} caption - The caption for the image.
@@ -108,7 +105,6 @@ class connMessage {
 
     /**
      * Sends an image reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the image.
      * @param {string} caption - The caption for the image.
