@@ -18,7 +18,7 @@ const node_cache_1 = __importDefault(require("node-cache"));
 const mongodb_1 = require("mongodb");
 const mysql_baileys_1 = require("mysql-baileys");
 const MongoAuth_1 = __importDefault(require("../auth/MongoAuth"));
-const connMessage = require('../message/connMessage');
+const connMessage_1 = require("../message/connMessage");
 const logger = (0, pino_1.default)({ level: process.env.LOG_LEVEL || 'info' });
 const store = (0, baileys_1.makeInMemoryStore)({ logger });
 class WhatsAppClient {
@@ -46,6 +46,7 @@ class WhatsAppClient {
             }
         };
         this.customOptions = customOptions;
+        this.msgOption = new connMessage_1.ConnMessage; // Initialize ConnMessage
     }
     initMongoAuth(pathAuthFile, collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -89,16 +90,10 @@ class WhatsAppClient {
                 return baileys_1.proto.Message.fromObject({});
             });
             try {
-                this.sock = (0, baileys_1.makeWASocket)(Object.assign({ logger, printQRInTerminal: this.customOptions.printQRInTerminal, auth: {
+                this.sock = yield (0, baileys_1.makeWASocket)(Object.assign({ logger, printQRInTerminal: this.customOptions.printQRInTerminal, auth: {
                         creds: this.state.creds,
                         keys: signalKeyStore,
                     }, msgRetryCounterCache: this.msgRetryCounterCache, generateHighQualityLinkPreview: true, getMessage }, this.customOptions));
-                this.msgOption = new connMessage();
-                for (const funcName of Object.getOwnPropertyNames(connMessage.prototype)) {
-                    if (funcName !== 'constructor') {
-                        this.sock[funcName] = connMessage.prototype[funcName].bind(this.sock);
-                    }
-                }
                 const eventEmitter = this.sock.ev;
                 store === null || store === void 0 ? void 0 : store.bind(eventEmitter);
                 this.sock.ev.on('creds.update', this.saveCreds);
@@ -112,6 +107,16 @@ class WhatsAppClient {
     }
     getSocket() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.msgOption = new connMessage_1.ConnMessage();
+            // Binding ConnMessage methods to this.sock
+            for (const method of Object.getOwnPropertyNames(connMessage_1.ConnMessage.prototype)) {
+                if (method !== 'constructor') {
+                    this.sock[method] = this.msgOption[method].bind(this.sock);
+                }
+            }
+            if (!this.sock) {
+                throw new Error('Socket is not initialized yet');
+            }
             return this.sock;
         });
     }

@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCommands = exports.getCommand = exports.loadCommands = exports.extractResponseTextContent = exports.getQuotedMedia = exports.streamToBuffer = exports.downloadQuotedMediaMessage = exports.downloadMediaMsg = exports.extractPollVoteMessage = exports.extractTimestamp = exports.extractTextContent = exports.extractQuotedMessage = exports.extractMimeType = exports.connMessage = exports.WhatsAppClient = void 0;
+exports.getAllCommands = exports.getCommand = exports.loadCommands = exports.extractResponseTextContent = exports.getQuotedMedia = exports.streamToBuffer = exports.downloadQuotedMediaMessage = exports.downloadMediaMsg = exports.extractPollVoteMessage = exports.extractTimestamp = exports.extractTextContent = exports.extractQuotedMessage = exports.extractMimeType = exports.ConnMessage = exports.useMongoDBAuthState = exports.WhatsAppClient = void 0;
 const sock_1 = __importDefault(require("./socket/sock"));
 exports.WhatsAppClient = sock_1.default;
+const MongoAuth_1 = __importDefault(require("./auth/MongoAuth"));
+exports.useMongoDBAuthState = MongoAuth_1.default;
 const getMimeType_1 = require("./message/getMimeType");
 Object.defineProperty(exports, "extractMimeType", { enumerable: true, get: function () { return getMimeType_1.extractMimeType; } });
 const getQuoted_1 = require("./message/getQuoted");
@@ -23,8 +25,8 @@ Object.defineProperty(exports, "downloadMediaMsg", { enumerable: true, get: func
 Object.defineProperty(exports, "downloadQuotedMediaMessage", { enumerable: true, get: function () { return downloadMedia_1.downloadQuotedMediaMessage; } });
 Object.defineProperty(exports, "streamToBuffer", { enumerable: true, get: function () { return downloadMedia_1.streamToBuffer; } });
 Object.defineProperty(exports, "getQuotedMedia", { enumerable: true, get: function () { return downloadMedia_1.getQuotedMedia; } });
-const connMessage = require('./message/connMessage');
-exports.connMessage = connMessage;
+const connMessage_1 = require("./message/connMessage");
+Object.defineProperty(exports, "ConnMessage", { enumerable: true, get: function () { return connMessage_1.ConnMessage; } });
 const loadCommand_1 = require("./utils/loadCommand");
 Object.defineProperty(exports, "loadCommands", { enumerable: true, get: function () { return loadCommand_1.loadCommands; } });
 Object.defineProperty(exports, "getCommand", { enumerable: true, get: function () { return loadCommand_1.getCommand; } });

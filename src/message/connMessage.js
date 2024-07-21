@@ -124,7 +124,6 @@ class connMessage {
 
     /**
      * Sends a video message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the video.
      * @param {string} caption - The caption for the video.
@@ -144,7 +143,6 @@ class connMessage {
 
     /**
      * Sends a video reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the video.
      * @param {string} caption - The caption for the video.
@@ -164,7 +162,6 @@ class connMessage {
 
     /**
      * Sends a document message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the document.
      * @param {string} mimetype - The MIME type of the document.
@@ -186,7 +183,6 @@ class connMessage {
 
     /**
      * Sends a document reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the document.
      * @param {string} mimetype - The MIME type of the document.
@@ -208,7 +204,6 @@ class connMessage {
 
     /**
      * Sends an audio message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the audio.
      * @param {boolean} [ptt=false] - Whether the audio is a push-to-talk message.
@@ -228,7 +223,6 @@ class connMessage {
 
     /**
      * Sends an audio reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the audio.
      * @param {boolean} [ptt=false] - Whether the audio is a push-to-talk message.
@@ -248,7 +242,6 @@ class connMessage {
 
     /**
      * Sends a GIF message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the GIF.
      * @param {boolean} [playback=true] - Whether the GIF should play back.
@@ -272,7 +265,6 @@ class connMessage {
 
     /**
      * Sends a GIF reply message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the GIF.
      * @param {boolean} [playback=true] - Whether the GIF should play back.
@@ -296,7 +288,6 @@ class connMessage {
 
     /**
      * Replies to a message with text.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to quote.
      * @param {string} text - The text to reply with.
      * @throws {Error} - If there is an error replying to the message.
@@ -311,7 +302,6 @@ class connMessage {
 
     /**
      * Sends a text message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object.
      * @param {string} text - The text to send.
      * @throws {Error} - If there is an error sending the text.
@@ -326,7 +316,6 @@ class connMessage {
 
     /**
      * Reacts to a message with an emoji.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to react to.
      * @param {string} emoji - The emoji to react with.
      * @throws {Error} - If there is an error reacting to the message.
@@ -341,7 +330,6 @@ class connMessage {
 
     /**
      * Edits a sent message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The original message object.
      * @param {object} sentMessage - The sent message object.
      * @param {string} newMessage - The new message text.
@@ -357,7 +345,6 @@ class connMessage {
 
     /**
      * Deletes a message in a group.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to delete.
      * @returns {Promise<object>} - The response from the delete operation.
      * @throws {Error} - If there is an error deleting the message.
@@ -395,7 +382,6 @@ class connMessage {
 
     /**
      * Deletes a message.
-     * @param {object} sock - The WhatsApp socket instance.
      * @param {object} m - The message object to delete.
      * @returns {Promise<object>} - The response from the delete operation.
      * @throws {Error} - If there is an error deleting the message.

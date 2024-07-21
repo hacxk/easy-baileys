@@ -112,7 +112,7 @@ class WhatsAppClient {
                 ...this.customOptions
             });
 
-            this.msgOption = new connMessage(this.sock);
+            this.msgOption = new connMessage();
 
             for (const funcName of Object.getOwnPropertyNames(connMessage.prototype)) {
                 if (funcName !== 'constructor') {
