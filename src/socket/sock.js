@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, delay, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
 const pino = require('pino');
 const NodeCache = require('node-cache');
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const { useMySQLAuthState } = require('mysql-baileys'); // Import for MySQL authentication
 const useMongoDBAuthState = require("../auth/MongoAuth");
 const connMessage = require("../message/connMessage");
@@ -34,10 +34,7 @@ class WhatsAppClient {
         if (!collectionName) {
             throw new Error('Please provide a Collection name to Save/Retrive Session!')
         }
-        const mongoClient = new MongoClient(pathAuthFile, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        const mongoClient = new MongoClient(pathAuthFile);
 
         await mongoClient.connect();
 
@@ -47,7 +44,7 @@ class WhatsAppClient {
         const { state, saveCreds } = await useMongoDBAuthState(collection);
         this.state = state;
         this.saveCreds = saveCreds;
-
+        console.log(state, '[[[[[[[[[[[[[[[[[[[[[[')
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 

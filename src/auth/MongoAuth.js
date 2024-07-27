@@ -4,6 +4,7 @@ const { generateRegistrationId } = require("@whiskeysockets/baileys/lib/Utils/ge
 const { randomBytes } = require("crypto");
 const { performance } = require('perf_hooks');
 const { EventEmitter } = require('events');
+const { ObjectId } = require('mongodb'); // Make sure to import ObjectId from MongoDB
 
 /**
  * Class representing an advanced authentication state stored in a MongoDB collection.
@@ -130,7 +131,7 @@ class AdvancedMongoAuthState extends EventEmitter {
       await this.collection.updateOne({ _id: id }, update, { upsert: true });
       this.cache.set(id, { data, timestamp: Date.now() });
       if (this.cache.size > this.cacheSize) {
-        const oldestKey = [...this.cache.keys()].sort((a, b) => 
+        const oldestKey = [...this.cache.keys()].sort((a, b) =>
           this.cache.get(a).timestamp - this.cache.get(b).timestamp
         )[0];
         this.cache.delete(oldestKey);
@@ -158,15 +159,34 @@ class AdvancedMongoAuthState extends EventEmitter {
   async readData(id) {
     const start = performance.now();
     try {
-      if (this.cache.has(id)) {
-        this.emit('cacheHit', { id });
-        return this.cache.get(id).data;
+      let queryId;
+      if (typeof id === 'string') {
+        if (/^[a-fA-F0-9]{24}$/.test(id)) {
+          queryId = new ObjectId(id); // Convert valid 24-character hex string to ObjectId
+        } else {
+          this.logger.warn(`Invalid ObjectId format for ${id}. Generating a new ObjectId.`);
+          queryId = new ObjectId(); // Create a new ObjectId
+        }
+      } else if (id instanceof ObjectId) {
+        queryId = id; // Use the ObjectId directly
+      } else if (typeof id === 'number') {
+        queryId = new ObjectId(); // Create a new ObjectId
+      } else {
+        this.logger.warn(`Invalid id format for ${id}. Generating a new ObjectId.`);
+        queryId = new ObjectId(); // Create a new ObjectId
       }
-      const data = await this.collection.findOne({ _id: id });
+  
+      if (this.cache.has(queryId.toString())) {
+        this.emit('cacheHit', { id: queryId.toString() });
+        return this.cache.get(queryId.toString()).data;
+      }
+  
+      const data = await this.collection.findOne({ _id: queryId });
       if (!data) return null;
+  
       const parsed = JSON.parse(JSON.stringify(data), BufferJSON.reviver);
-      this.cache.set(id, { data: parsed, timestamp: Date.now() });
-      this.emit('cacheMiss', { id });
+      this.cache.set(queryId.toString(), { data: parsed, timestamp: Date.now() });
+      this.emit('cacheMiss', { id: queryId.toString() });
       return parsed;
     } catch (error) {
       this.logger.error(`Failed to read data for ${id}:`, error);
