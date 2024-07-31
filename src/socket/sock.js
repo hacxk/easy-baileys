@@ -17,7 +17,9 @@ class WhatsAppClient {
      * Creates an instance of WhatsAppClient.
      * @param {object} [customOptions={}] - Custom options for the client.
      */
-    constructor(customOptions = {}) {
+    constructor(
+        customOptions = {},
+    ) {
         this.logger = pino();
         this.msgRetryCounterCache = new NodeCache();
         this.customOptions = customOptions;
@@ -44,7 +46,6 @@ class WhatsAppClient {
         const { state, saveCreds } = await useMongoDBAuthState(collection);
         this.state = state;
         this.saveCreds = saveCreds;
-        console.log(state, '[[[[[[[[[[[[[[[[[[[[[[')
         await this.initSocket(state.creds, makeCacheableSignalKeyStore(state.keys, this.logger));
     }
 

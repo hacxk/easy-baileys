@@ -46,7 +46,7 @@ class WhatsAppClient {
             }
         };
         this.customOptions = customOptions;
-        this.msgOption = new connMessage_1.ConnMessage; // Initialize ConnMessage
+        this.msgOption = new connMessage_1.ConnMessage(); // Initialize ConnMessage
     }
     initMongoAuth(pathAuthFile, collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -55,7 +55,7 @@ class WhatsAppClient {
             }
             const mongoClient = new mongodb_1.MongoClient(pathAuthFile);
             yield mongoClient.connect();
-            const db = mongoClient.db("v42ef24t4ew");
+            const db = mongoClient.db("easybaileys");
             const collection = db.collection(collectionName);
             const { state, saveCreds } = yield (0, MongoAuth_1.default)(collection);
             this.state = state;
@@ -90,10 +90,18 @@ class WhatsAppClient {
                 return baileys_1.proto.Message.fromObject({});
             });
             try {
-                this.sock = yield (0, baileys_1.makeWASocket)(Object.assign({ logger, printQRInTerminal: this.customOptions.printQRInTerminal, auth: {
+                const baseSock = yield (0, baileys_1.makeWASocket)(Object.assign({ logger, printQRInTerminal: this.customOptions.printQRInTerminal || true, auth: {
                         creds: this.state.creds,
                         keys: signalKeyStore,
                     }, msgRetryCounterCache: this.msgRetryCounterCache, generateHighQualityLinkPreview: true, getMessage }, this.customOptions));
+                // Extend the base socket with ConnMessage methods
+                this.sock = baseSock;
+                // Binding ConnMessage methods to this.sock
+                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.msgOption))
+                    .filter(method => typeof this.msgOption[method] === 'function' && method !== 'constructor');
+                methods.forEach(method => {
+                    this.sock[method] = this.msgOption[method].bind(this.sock);
+                });
                 const eventEmitter = this.sock.ev;
                 store === null || store === void 0 ? void 0 : store.bind(eventEmitter);
                 this.sock.ev.on('creds.update', this.saveCreds);
@@ -107,13 +115,6 @@ class WhatsAppClient {
     }
     getSocket() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.msgOption = new connMessage_1.ConnMessage();
-            // Binding ConnMessage methods to this.sock
-            for (const method of Object.getOwnPropertyNames(connMessage_1.ConnMessage.prototype)) {
-                if (method !== 'constructor') {
-                    this.sock[method] = this.msgOption[method].bind(this.sock);
-                }
-            }
             if (!this.sock) {
                 throw new Error('Socket is not initialized yet');
             }

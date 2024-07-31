@@ -324,9 +324,13 @@ The `connMessage` class provides methods to interact with WhatsApp messages, inc
 
 
 
-### Methods
+### Methods 
+
+
 
 See [API Documentation](#configuration-options-%E2%9A%99%EF%B8%8F) for detailed method explanations.
+
+# JAVASCRIPT
 
 1. **`sendSticker(m, bufferOrUrl)`** 🎨
    - **Description**: Sends a sticker message to the given chat.
@@ -512,6 +516,536 @@ See [API Documentation](#configuration-options-%E2%9A%99%EF%B8%8F) for detailed 
 * `groupJid` (string): The group's JID (e.g., `1234567890-123456@g.us`).
 * `participantJid` (string): The participant's JID (e.g., `9876543210@s.whatsapp.net`).
 
+
+# TYPESCRIPT
+
+# ConnMessage Class Documentation Typescript
+
+The `ConnMessage` class extends the functionality of the `WASocket` class from the `@whiskeysockets/baileys` library, providing a variety of methods for sending different types of messages in a WhatsApp chat application.
+
+## Table of Contents
+1. [sendTextMessage](#sendTextMessage)
+2. [reply](#reply)
+3. [react](#react)
+4. [send](#send)
+5. [sendImage](#sendImage)
+6. [sendImageReply](#sendImageReply)
+7. [sendVideo](#sendVideo)
+8. [sendVideoReply](#sendVideoReply)
+9. [sendDocument](#sendDocument)
+10. [sendDocumentReply](#sendDocumentReply)
+11. [sendSticker](#sendSticker)
+12. [sendStickerReply](#sendStickerReply)
+13. [sendGIF](#sendGIF)
+14. [sendGIFReply](#sendGIFReply)
+15. [sendAudio](#sendAudio)
+16. [sendAudioReply](#sendAudioReply)
+17. [sendContact](#sendContact)
+18. [sendContactReply](#sendContactReply)
+19. [sendPoll](#sendPoll)
+20. [sendPollReply](#sendPollReply)
+21. [editMessage](#editMessage)
+22. [deleteMessage](#deleteMessage)
+23. [sendLocation](#sendLocation)
+24. [sendLocationReply](#sendLocationReply)
+25. [sendLiveLocation](#sendLiveLocation)
+26. [sendButton](#sendButton)
+27. [sendListMessage](#sendListMessage)
+28. [sendTemplateMessage](#sendTemplateMessage)
+
+## Method Descriptions
+
+### sendTextMessage
+
+Sends a simple text message to a specified JID (WhatsApp ID).
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `text: string` - The message text to send
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendTextMessage("1234567890@s.whatsapp.net", "Hello, World!");
+```
+
+### reply
+
+Replies to a received message with a text message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `text: string` - The reply text
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.reply(receivedMessage, "Thanks for your message!");
+```
+
+### react
+
+Sends a reaction to a message using an emoji.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The message to react to
+- `emoji: string` - The emoji to use as a reaction
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.react(receivedMessage, "👍");
+```
+
+### send
+
+A generic method to send any type of content to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `content: AnyMessageContent` - The content to send
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.send("1234567890@s.whatsapp.net", { text: "Hello" }, { ephemeralExpiration: 86400 });
+```
+
+### sendImage
+
+Sends an image to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `image: WAMediaUpload` - The image to send
+- `caption?: string` - Optional caption for the image
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendImage("1234567890@s.whatsapp.net", "./image.jpg", "Check out this picture!");
+```
+
+### sendImageReply
+
+Sends an image as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `image: WAMediaUpload` - The image to send
+- `caption?: string` - Optional caption for the image
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendImageReply(receivedMessage, "./image.jpg", "Here's the image you requested.");
+```
+
+### sendVideo
+
+Sends a video to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `video: WAMediaUpload` - The video to send
+- `caption?: string` - Optional caption for the video
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendVideo("1234567890@s.whatsapp.net", "./video.mp4", "Check out this video!");
+```
+
+### sendVideoReply
+
+Sends a video as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `video: WAMediaUpload` - The video to send
+- `caption?: string` - Optional caption for the video
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendVideoReply(receivedMessage, "./video.mp4", "Here's the video you asked for.");
+```
+
+### sendDocument
+
+Sends a document to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `document: WAMediaUpload` - The document to send
+- `filename: string` - The filename for the document
+- `mimeType: string` - The MIME type of the document
+- `caption?: string` - Optional caption for the document
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendDocument("1234567890@s.whatsapp.net", "./document.pdf", "report.pdf", "application/pdf", "Monthly Report");
+```
+
+### sendDocumentReply
+
+Sends a document as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `document: WAMediaUpload` - The document to send
+- `filename: string` - The filename for the document
+- `mimeType: string` - The MIME type of the document
+- `caption?: string` - Optional caption for the document
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendDocumentReply(receivedMessage, "./document.pdf", "report.pdf", "application/pdf", "Here's the report you requested.");
+```
+
+### sendSticker
+
+Sends a sticker to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `sticker: WAMediaUpload` - The sticker to send
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendSticker("1234567890@s.whatsapp.net", "./sticker.webp");
+```
+
+### sendStickerReply
+
+Sends a sticker as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `sticker: WAMediaUpload` - The sticker to send
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendStickerReply(receivedMessage, "./sticker.webp");
+```
+
+### sendGIF
+
+Sends a GIF to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `gif: WAMediaUpload` - The GIF to send
+- `caption?: string` - Optional caption for the GIF
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendGIF("1234567890@s.whatsapp.net", "./animation.gif", "Check out this cool GIF!");
+```
+
+### sendGIFReply
+
+Sends a GIF as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `gif: WAMediaUpload` - The GIF to send
+- `caption?: string` - Optional caption for the GIF
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendGIFReply(receivedMessage, "./animation.gif", "Here's a funny GIF for you!");
+```
+
+### sendAudio
+
+Sends an audio file to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `audio: WAMediaUpload` - The audio file to send
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendAudio("1234567890@s.whatsapp.net", "./audio.mp3");
+```
+
+### sendAudioReply
+
+Sends an audio file as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `audio: WAMediaUpload` - The audio file to send
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendAudioReply(receivedMessage, "./audio.mp3");
+```
+
+### sendContact
+
+Sends a contact card to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `contact: { name: string, number: string }` - The contact information
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendContact("1234567890@s.whatsapp.net", { name: "John Doe", number: "+1234567890" });
+```
+
+### sendContactReply
+
+Sends a contact card as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `contact: { name: string, number: string }` - The contact information
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendContactReply(receivedMessage, { name: "Jane Doe", number: "+9876543210" });
+```
+
+### sendPoll
+
+Sends a poll to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `name: string` - The question or title of the poll
+- `values: string[]` - An array of poll options
+- `selectableCount?: number` - Optional number of selectable options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendPoll("1234567890@s.whatsapp.net", "What's your favorite color?", ["Red", "Blue", "Green"], 1);
+```
+
+### sendPollReply
+
+Sends a poll as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `name: string` - The question or title of the poll
+- `values: string[]` - An array of poll options
+- `selectableCount?: number` - Optional number of selectable options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendPollReply(receivedMessage, "What's your favorite fruit?", ["Apple", "Banana", "Orange"], 2);
+```
+
+### editMessage
+
+Edits a previously sent message.
+
+**Arguments:**
+- `jid: string` - The chat's WhatsApp ID
+- `m: proto.IWebMessageInfo` - The message to edit
+- `newContent: string | { text?: string, caption?: string }` - The new content for the message
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.editMessage("1234567890@s.whatsapp.net", sentMessage, "Updated message content");
+```
+
+### deleteMessage
+
+Deletes a message.
+
+**Arguments:**
+- `jid: string` - The chat's WhatsApp ID
+- `m: proto.IWebMessageInfo` - The message to delete
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.deleteMessage("1234567890@s.whatsapp.net", messageToDelete);
+```
+
+### sendLocation
+
+Sends a location to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `latitude: number` - The latitude of the location
+- `longitude: number` - The longitude of the location
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendLocation("1234567890@s.whatsapp.net", 40.7128, -74.0060);
+```
+
+### sendLocationReply
+
+Sends a location as a reply to a received message.
+
+**Arguments:**
+- `m: proto.IWebMessageInfo` - The received message to reply to
+- `latitude: number` - The latitude of the location
+- `longitude: number` - The longitude of the location
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendLocationReply(receivedMessage, 51.5074, -0.1278);
+```
+
+### sendLiveLocation
+
+Sends a live location to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `latitude: number` - The latitude of the location
+- `longitude: number` - The longitude of the location
+- `durationMs: number` - The duration of the live location in milliseconds
+- `options?: MiscMessageGenerationOptions & { comment?: string }` - Optional message generation options and comment
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const result = await sock.sendLiveLocation("1234567890@s.whatsapp.net", 40.7128, -74.0060, 3600000, { comment: "I'm here!" });
+```
+
+### sendButton
+
+Sends a message with buttons to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `contentText: string` - The main text content of the message
+- `buttons: proto.Message.ButtonsMessage.IButton[]` - An array of button objects
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const buttons = [
+  { buttonId: '1', buttonText: { displayText: 'Button 1' }, type: 1 },
+  { buttonId: '2', buttonText: { displayText: 'Button 2' }, type: 1 },
+];
+const result = await sock.sendButton("1234567890@s.whatsapp.net", "Please choose an option:", buttons);
+```
+
+### sendListMessage
+
+Sends a list message to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `message: proto.Message.ListMessage` - The list message object
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const listMessage: proto.Message.ListMessage = {
+  title: "Menu",
+  description: "Please select an item",
+  buttonText: "View Menu",
+  listType: 1,
+  sections: [
+    {
+      title: "Section 1",
+      rows: [
+        { title: "Option 1", description: "Description for Option 1" },
+        { title: "Option 2", description: "Description for Option 2" },
+      ],
+    },
+  ],
+};
+const result = await sock.sendListMessage("1234567890@s.whatsapp.net", listMessage);
+```
+
+### sendTemplateMessage
+
+Sends a template message with buttons to a specified JID.
+
+**Arguments:**
+- `jid: string` - The recipient's WhatsApp ID
+- `content: Templatable` - The content object containing text, footer, and template buttons
+- `options?: MiscMessageGenerationOptions` - Optional message generation options
+
+**Returns:** `Promise<proto.WebMessageInfo | undefined>`
+
+**Example:**
+```typescript
+const templateContent: Templatable = {
+  text: "Hello! Please choose an option:",
+  footer: "Footer text",
+  templateButtons: [
+    { index: 1, urlButton: { displayText: "Visit Website", url: "https://example.com" } },
+    { index: 2, callButton: { displayText: "Call us", phoneNumber: "+1234567890" } },
+    { index: 3, quickReplyButton: { displayText: "Quick Reply", id: "quick-reply-id" } },
+  ],
+};
+const result = await sock.sendTemplateMessage("1234567890@s.whatsapp.net", templateContent);
+```
+
 **Example:**
 
 ```javascript
@@ -544,7 +1078,9 @@ try {
 }
 ```
 
----
+--------------------------------------------------------------
+
+
 
 # Setting Up Commands with easy-baileys
 

@@ -55,13 +55,20 @@ declare class AdvancedMongoAuthState extends EventEmitter {
     constructor(collection: Collection, options?: AdvancedMongoAuthStateOptions);
     init(): Promise<void>;
     private initAuthCreds;
+    private generateSignedPreKey;
+    private generateDeviceId;
+    private generatePhoneId;
+    private generateIdentityId;
+    private generateBackupToken;
     private startCacheCleanup;
     private startWriteQueueProcessor;
     private performWrite;
     readData<T>(id: string): Promise<T | null>;
     removeData(id: string): Promise<void>;
+    private getObjectId;
+    private createQuery;
     keys(): Promise<{
-        get: <T>(type: string, ids: string[]) => Promise<Record<string, Awaited<T> | null>>;
+        get: <T>(type: string, ids: string[]) => Promise<Record<string, T | null>>;
         set: (data: Record<string, Record<string, any>>) => Promise<void>;
     }>;
     saveCreds(): Promise<void>;

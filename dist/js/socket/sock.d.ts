@@ -1,4 +1,7 @@
 import { WASocket } from '@whiskeysockets/baileys';
+import { ConnMessage } from '../message/connMessage';
+interface ExtendedWASocket extends WASocket, ConnMessage {
+}
 interface CustomOptions {
     browser?: [string, string, string];
     keepAliveIntervalMs?: number;
@@ -30,7 +33,7 @@ declare class WhatsAppClient {
     initMySQLAuth(mysqlConfig: MySQLConfig): Promise<void>;
     private initSocket;
     private handleConnectionUpdate;
-    getSocket(): Promise<WASocket>;
+    getSocket(): Promise<ExtendedWASocket>;
     getPairingCode(jid: string): Promise<string>;
     static create(authType: 'mongo' | 'multi' | 'mysql', config: string | MySQLConfig, customOptions?: CustomOptions): Promise<WhatsAppClient>;
 }

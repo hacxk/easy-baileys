@@ -42,13 +42,7 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
     }
     initAuthCreds() {
         const identityKey = baileys_1.Curve.generateKeyPair();
-        // **TypeScript Fix:** Correctly construct SignedKeyPair
-        const signedPreKey = {
-            keyId: 1,
-            signature: (0, baileys_1.signedKeyPair)(identityKey, 1).signature,
-            public: identityKey.public,
-            private: identityKey.private
-        };
+        const signedPreKey = this.generateSignedPreKey(identityKey);
         return {
             noiseKey: baileys_1.Curve.generateKeyPair(),
             signedIdentityKey: identityKey,
@@ -61,20 +55,38 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
             accountSettings: {
                 unarchiveChats: false,
                 autoUpdateStatus: true,
-                statusMsgTemplate: "Hey there! I'm using whatsapp.",
+                statusMsgTemplate: "Hey there! I'm using WhatsApp.",
             },
             account: {
                 details: "CaffeineOS",
                 accountSignature: (0, crypto_1.randomBytes)(32).toString("base64"),
                 platform: "android",
             },
-            deviceId: (0, crypto_1.randomBytes)(16).toString("hex"),
-            phoneId: (0, crypto_1.randomBytes)(16).toString("hex"),
-            identityId: (0, crypto_1.randomBytes)(20).toString("base64"),
+            deviceId: this.generateDeviceId(),
+            phoneId: this.generatePhoneId(),
+            identityId: this.generateIdentityId(),
             registered: false,
-            backupToken: (0, crypto_1.randomBytes)(20).toString("base64"),
+            backupToken: this.generateBackupToken(),
             createdAt: Date.now(),
         };
+    }
+    generateSignedPreKey(identityKey) {
+        const preKey = baileys_1.Curve.generateKeyPair();
+        const keyId = Math.floor(Math.random() * 16777215); // Ensures a number between 0 and 16777215
+        const signature = (0, baileys_1.signedKeyPair)(identityKey, keyId).signature;
+        return Object.assign(Object.assign({}, preKey), { keyId, signature });
+    }
+    generateDeviceId() {
+        return (0, crypto_1.randomBytes)(16).toString("hex");
+    }
+    generatePhoneId() {
+        return (0, crypto_1.randomBytes)(16).toString("hex");
+    }
+    generateIdentityId() {
+        return (0, crypto_1.randomBytes)(20).toString("base64");
+    }
+    generateBackupToken() {
+        return (0, crypto_1.randomBytes)(20).toString("base64");
     }
     startCacheCleanup() {
         setInterval(() => {
@@ -112,8 +124,8 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
                 const update = {
                     $set: Object.assign(Object.assign({}, informationToStore), { updatedAt: new Date() }),
                 };
-                // Updated line for ObjectId conversion
-                yield this.collection.updateOne({ _id: new mongodb_1.ObjectId(id) }, update, { upsert: true });
+                const objectId = this.getObjectId(id);
+                yield this.collection.updateOne({ _id: objectId }, update, { upsert: true });
                 this.cache.set(id, { data, timestamp: Date.now() });
                 if (this.cache.size > this.cacheSize) {
                     this.cache.delete(this.cache.keys().next().value);
@@ -142,8 +154,8 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
                     this.emit('cacheHit', { id });
                     return this.cache.get(id).data;
                 }
-                // **TypeScript Fix:**  Use ObjectId for MongoDB queries
-                const data = yield this.collection.findOne({ _id: new mongodb_1.ObjectId(id) });
+                const query = this.createQuery(id);
+                const data = yield this.collection.findOne(query);
                 if (!data)
                     return null;
                 const parsed = JSON.parse(JSON.stringify(data), BufferJSON.reviver);
@@ -164,7 +176,8 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const start = perf_hooks_1.performance.now();
             try {
-                yield this.collection.deleteOne({ _id: new mongodb_1.ObjectId(id) });
+                const query = this.createQuery(id);
+                yield this.collection.deleteOne(query);
                 this.cache.delete(id);
                 this.emit('remove', { id });
             }
@@ -176,6 +189,12 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
             }
         });
     }
+    getObjectId(id) {
+        return mongodb_1.ObjectId.isValid(id) ? new mongodb_1.ObjectId(id) : new mongodb_1.ObjectId();
+    }
+    createQuery(id) {
+        return mongodb_1.ObjectId.isValid(id) ? { _id: new mongodb_1.ObjectId(id) } : { _id: id };
+    }
     keys() {
         return __awaiter(this, void 0, void 0, function* () {
             return {
@@ -184,7 +203,6 @@ class AdvancedMongoAuthState extends events_1.EventEmitter {
                     yield Promise.all(ids.map((id) => __awaiter(this, void 0, void 0, function* () {
                         let value = yield this.readData(`${type}-${id}`);
                         if (type === "app-state-sync-key" && value) {
-                            // Ensure that value is correctly cast and compatible
                             value = baileys_1.proto.Message.AppStateSyncKeyData.fromObject(value);
                         }
                         data[id] = value;

@@ -1,157 +1,51 @@
-interface SendMessageOptions {
+import { WASocket, proto, AnyMessageContent, MiscMessageGenerationOptions, WAMediaUpload } from '@whiskeysockets/baileys';
+type Templatable = {
+    /** add buttons to the message (conflicts with normal buttons) */
+    text: string;
+    templateButtons?: proto.IHydratedTemplateButton[];
+    footer?: string;
+};
+export declare class ConnMessage {
     [key: string]: any;
+    sendTextMessage(this: WASocket & ConnMessage, jid: string, text: string): Promise<proto.WebMessageInfo | undefined>;
+    reply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, text: string): Promise<proto.WebMessageInfo | undefined>;
+    react(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, emoji: string): Promise<proto.WebMessageInfo | undefined>;
+    send(this: WASocket & ConnMessage, jid: string, content: AnyMessageContent, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendImage(this: WASocket & ConnMessage, jid: string, image: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendImageReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, image: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendVideo(this: WASocket & ConnMessage, jid: string, video: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendVideoReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, video: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendDocument(this: WASocket & ConnMessage, jid: string, document: WAMediaUpload, filename: string, mimeType: string, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendDocumentReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, document: WAMediaUpload, filename: string, mimeType: string, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendSticker(this: WASocket & ConnMessage, jid: string, sticker: WAMediaUpload, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendStickerReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, sticker: WAMediaUpload, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendGIF(this: WASocket & ConnMessage, jid: string, gif: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendGIFReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, gif: WAMediaUpload, caption?: string, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendAudio(this: WASocket & ConnMessage, jid: string, audio: WAMediaUpload, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendAudioReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, audio: WAMediaUpload, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendContact(this: WASocket & ConnMessage, jid: string, contact: {
+        name: string;
+        number: string;
+    }, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendContactReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, contact: {
+        name: string;
+        number: string;
+    }, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendPoll(this: WASocket & ConnMessage, jid: string, name: string, values: string[], selectableCount?: number): Promise<proto.WebMessageInfo | undefined>;
+    sendPollReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, name: string, values: string[], selectableCount?: number): Promise<proto.WebMessageInfo | undefined>;
+    editMessage(this: WASocket & ConnMessage, jid: string, m: proto.IWebMessageInfo, newContent: string | {
+        text?: string;
+        caption?: string;
+    }): Promise<string>;
+    deleteMessage(this: WASocket & ConnMessage, jid: string, m: proto.IWebMessageInfo): Promise<proto.WebMessageInfo | undefined>;
+    sendLocation(this: WASocket & ConnMessage, jid: string, latitude: number, longitude: number, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendLocationReply(this: WASocket & ConnMessage, m: proto.IWebMessageInfo, latitude: number, longitude: number, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendLiveLocation(this: WASocket & ConnMessage, jid: string, latitude: number, longitude: number, durationMs: number, options?: MiscMessageGenerationOptions & {
+        comment?: string;
+    }): Promise<proto.WebMessageInfo | undefined>;
+    sendButton(this: WASocket & ConnMessage, jid: string, contentText: string, buttons: proto.Message.ButtonsMessage.IButton[], options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendListMessage(this: WASocket & ConnMessage, jid: string, message: proto.Message.ListMessage, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
+    sendTemplateMessage(this: WASocket & ConnMessage, jid: string, content: Templatable, options?: MiscMessageGenerationOptions): Promise<proto.WebMessageInfo | undefined>;
 }
-/**
- * Sends a message with a presence update.
- * @param {object} sock - The WhatsApp socket instance.
- * @param {string} jid - The JID of the recipient.
- * @param {object} content - The content of the message.
- * @param {object} [options={}] - Additional options for the message.
- * @returns {Promise<object>} - The response from the sendMessage function.
- * @throws {Error} - If there is an error sending the message.
- */
-declare const sendMessage: (sock: any, jid: string, content: any, options?: SendMessageOptions) => Promise<object>;
-/**
- * Sends a quoted message with a presence update.
- * @param {object} sock - The WhatsApp socket instance.
- * @param {string} jid - The JID of the recipient.
- * @param {object} m - The message object to quote.
- * @param {object} content - The content of the message.
- * @param {object} [options={}] - Additional options for the message.
- * @returns {Promise<object>} - The response from the sendMessageQuoted function.
- * @throws {Error} - If there is an error sending the quoted message.
- */
-declare const sendMessageQuoted: (sock: any, jid: string, m: any, content: any, options?: SendMessageOptions) => Promise<object>;
-declare class ConnMessage {
-    private scheduledMessages;
-    constructor();
-    /**
-     * Sends a sticker message.
-     * @param {object} m - The message object.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the sticker.
-     * @throws {Error} - If there is an error sending the sticker.
-     */
-    sendSticker(m: any, bufferOrUrl: Buffer | string): Promise<void>;
-    /**
-     * Sends a sticker reply message.
-     * @param {object} m - The message object to quote.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the sticker.
-     * @throws {Error} - If there is an error sending the sticker reply.
-     */
-    sendStickerReply(m: any, bufferOrUrl: Buffer | string): Promise<void>;
-    /**
-     * Sends an image message.
-     * @param {object} m - The message object.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the image.
-     * @param {string} caption - The caption for the image.
-     * @throws {Error} - If there is an error sending the image.
-     */
-    sendImage(m: any, bufferOrUrl: Buffer | string, caption: string): Promise<void>;
-    /**
-  * Sends an image reply message.
-  * @param {object} m - The message object to quote.
-  * @param {Buffer|string} bufferOrUrl - The buffer or URL of the image.
-  * @param {string} caption - The caption for the image.
-  * @throws {Error} - If there is an error sending the image reply.
-  */
-    sendImageReply(m: any, bufferOrUrl: Buffer | string, caption: string): Promise<void>;
-    /**
-    * Sends a video message.
-    * @param {object} m - The message object.
-    * @param {Buffer|string} bufferOrUrl - The buffer or URL of the video.
-    * @param {string} caption - The caption for the video.
-    * @throws {Error} - If there is an error sending the video.
-    */
-    sendVideo(m: any, bufferOrUrl: Buffer | string, caption: string): Promise<void>;
-    /**
-     * Sends a video reply message.
-     * @param {object} m - The message object to quote.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the video.
-     * @param {string} caption - The caption for the video.
-     * @throws {Error} - If there is an error sending the video reply.
-     */
-    sendVideoReply(m: any, bufferOrUrl: Buffer | string, caption: string): Promise<void>;
-    /**
-      * Sends a document message.
-      * @param {object} m - The message object.
-      * @param {Buffer|string} bufferOrUrl - The buffer or URL of the document.
-      * @param {string} mimetype - The MIME type of the document.
-      * @param {string} fileName - The file name of the document.
-      * @param {string} caption - The caption for the document.
-      * @throws {Error} - If there is an error sending the document.
-      */
-    sendDocument(m: any, bufferOrUrl: Buffer | string, mimetype: string, fileName: string, caption: string): Promise<void>;
-    /**
-       * Sends a document reply message.
-       * @param {object} m - The message object to quote.
-       * @param {Buffer|string} bufferOrUrl - The buffer or URL of the document.
-       * @param {string} mimetype - The MIME type of the document.
-       * @param {string} fileName - The file name of the document.
-       * @param {string} caption - The caption for the document.
-       * @throws {Error} - If there is an error sending the document reply.
-       */
-    sendDocumentReply(m: any, bufferOrUrl: Buffer | string, mimetype: string, fileName: string, caption: string): Promise<void>;
-    /**
-  * Sends an audio message.
-  * @param {object} m - The message object.
-  * @param {Buffer|string} bufferOrUrl - The buffer or URL of the audio.
-  * @param {boolean} [ptt=false] - Whether the audio is a push-to-talk message.
-  * @throws {Error} - If there is an error sending the audio.
-  */
-    sendAudio(m: any, bufferOrUrl: Buffer | string, ptt?: boolean): Promise<void>;
-    /**
-     * Sends an audio reply message.
-     * @param {object} m - The message object to quote.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the audio.
-     * @param {boolean} [ptt=false] - Whether the audio is a push-to-talk message.
-     * @throws {Error} - If there is an error sending the audio reply.
-     */
-    sendAudioReply(m: any, bufferOrUrl: Buffer | string, ptt?: boolean): Promise<void>;
-    /**
-     * Sends a GIF message.
-     * @param {object} m - The message object.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the GIF.
-     * @param {boolean} [playback=true] - Whether the GIF should play back.
-     * @throws {Error} - If there is an error sending the GIF.
-     */
-    sendGif(m: any, bufferOrUrl: Buffer | string, playback?: boolean): Promise<void>;
-    /**
-     * Sends a GIF reply message.
-     * @param {object} m - The message object to quote.
-     * @param {Buffer|string} bufferOrUrl - The buffer or URL of the GIF.
-     * @param {boolean} [playback=true] - Whether the GIF should play back.
-     * @throws {Error} - If there is an error sending the GIF reply.
-     */
-    sendGifReply(m: any, bufferOrUrl: Buffer | string, playback?: boolean): Promise<void>;
-    /**
-     * Replies to a message with text.
-     * @param {object} m - The message object to quote.
-     * @param {string} text - The text to reply with.
-     * @throws {Error} - If there is an error replying to the message.
-     */
-    reply(m: any, text: string): Promise<void>;
-    /**
-     * Sends a text message.
-     * @param {object} m - The message object.
-     * @param {string} text - The text to send.
-     * @throws {Error} - If there is an error sending the text.
-     */
-    send(m: any, text: string): Promise<void>;
-    /**
-     * Reacts to a message with an emoji.
-     * @param {object} m - The message object to react to.
-     * @param {string} emoji - The emoji to react with.
-     * @throws {Error} - If there is an error reacting to the message.
-     */
-    react(m: any, emoji: string): Promise<void>;
-    /**
-     * Edits a sent message.
-     * @param {object} m - The original message object.
-     * @param {object} sentMessage - The sent message object.
-     * @param {string} newMessage - The new message text.
-     * @throws {Error} - If there is an error editing the message.
-     */
-    editMsg(m: any, sentMessage: any, newMessage: string): Promise<void>;
-}
-export { sendMessage, sendMessageQuoted, ConnMessage };
+export {};
 //# sourceMappingURL=connMessage.d.ts.map
