@@ -17,7 +17,7 @@ const pino_1 = __importDefault(require("pino"));
 const node_cache_1 = __importDefault(require("node-cache"));
 const mongodb_1 = require("mongodb");
 const mysql_baileys_1 = require("mysql-baileys");
-const MongoAuth_1 = __importDefault(require("../auth/MongoAuth"));
+const mongo_baileys_1 = require("mongo-baileys");
 const connMessage_1 = require("../message/connMessage");
 const logger = (0, pino_1.default)({ level: process.env.LOG_LEVEL || 'info' });
 const store = (0, baileys_1.makeInMemoryStore)({ logger });
@@ -34,10 +34,8 @@ class WhatsAppClient {
             if (connection === 'close') {
                 const shouldReconnect = ((_b = (_a = lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
                 logger.info('connection closed due to', lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error, ', reconnecting', shouldReconnect);
-                if (shouldReconnect) {
-                    this.initSocket();
-                }
-                else {
+                if (!shouldReconnect) {
+                    // this.initSocket();
                     logger.info('Connection closed. You are logged out.');
                 }
             }
@@ -48,16 +46,22 @@ class WhatsAppClient {
         this.customOptions = customOptions;
         this.msgOption = new connMessage_1.ConnMessage(); // Initialize ConnMessage
     }
+    connectToMongoDB(pathAuthFile, collectionName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const client = new mongodb_1.MongoClient(pathAuthFile);
+            yield client.connect();
+            const db = client.db("whatsappmultidevice");
+            const collection = db.collection(collectionName);
+            return { client, collection };
+        });
+    }
     initMongoAuth(pathAuthFile, collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!collectionName) {
                 throw new Error('Please provide a Collection name to Save/Retrieve Session!');
             }
-            const mongoClient = new mongodb_1.MongoClient(pathAuthFile);
-            yield mongoClient.connect();
-            const db = mongoClient.db("easybaileys");
-            const collection = db.collection(collectionName);
-            const { state, saveCreds } = yield (0, MongoAuth_1.default)(collection);
+            const { collection } = yield this.connectToMongoDB(pathAuthFile, collectionName);
+            const { state, saveCreds } = yield (0, mongo_baileys_1.useMongoDBAuthState)(collection);
             this.state = state;
             this.saveCreds = saveCreds;
             yield this.initSocket();

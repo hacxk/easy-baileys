@@ -1,6 +1,5 @@
 // src/index.js
 const WhatsAppClient = require('./socket/sock');
-const useMongoDBAuthState = require("./auth/MongoAuth");
 const { extractMimeType } = require('./message/getMimeType');
 const { extractQuotedMessage } = require('./message/getQuoted');
 const { extractTextContent } = require('./message/getTextContent');
@@ -22,7 +21,6 @@ const {
 
 module.exports = {
     WhatsAppClient,
-    useMongoDBAuthState,
     connMessage,
     extractMimeType,
     extractQuotedMessage,

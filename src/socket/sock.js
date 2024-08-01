@@ -1,11 +1,10 @@
 const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, delay, DisconnectReason, makeInMemoryStore, proto } = require("@whiskeysockets/baileys");
 const pino = require('pino');
 const NodeCache = require('node-cache');
-const { MongoClient, ObjectId } = require("mongodb");
 const { useMySQLAuthState } = require('mysql-baileys'); // Import for MySQL authentication
-const useMongoDBAuthState = require("../auth/MongoAuth");
+const { useMongoDBAuthState } = require('mongo-baileys');
 const connMessage = require("../message/connMessage");
-
+const { MongoClient } = require('mongodb')
 const logger = pino({ level: process.env.LOG_LEVEL || 'debug' });
 const store = makeInMemoryStore({ logger });
 
@@ -36,13 +35,11 @@ class WhatsAppClient {
         if (!collectionName) {
             throw new Error('Please provide a Collection name to Save/Retrive Session!')
         }
-        const mongoClient = new MongoClient(pathAuthFile);
-
-        await mongoClient.connect();
-
-        const db = mongoClient.db("v42ef24t4ew");
+        const dbName = "whatsappmultidevice";
+        const client = new MongoClient(pathAuthFile);
+        await client.connect();
+        const db = client.db(dbName);
         const collection = db.collection(collectionName);
-
         const { state, saveCreds } = await useMongoDBAuthState(collection);
         this.state = state;
         this.saveCreds = saveCreds;
@@ -127,9 +124,8 @@ class WhatsAppClient {
                 if (connection === 'close') {
                     const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
                     console.log('connection closed due to', lastDisconnect?.error, ', reconnecting', shouldReconnect);
-                    if (shouldReconnect) {
-                        this.initSocket(creds, keys);
-                    } else {
+                    if (!shouldReconnect) {
+                        // this.initSocket(creds, keys);
                         console.log('Connection closed. You are logged out.')
                     }
                 } else if (connection === 'open') {

@@ -1,5 +1,7 @@
 import { WASocket } from '@whiskeysockets/baileys';
+import { MongoClient, Collection, Document } from 'mongodb';
 import { ConnMessage } from '../message/connMessage';
+import { AuthenticationCreds } from "@whiskeysockets/baileys";
 interface ExtendedWASocket extends WASocket, ConnMessage {
 }
 interface CustomOptions {
@@ -18,6 +20,10 @@ interface MySQLConfig {
     port: number;
     session: string;
 }
+interface AuthDocument extends Document {
+    _id: string;
+    creds?: AuthenticationCreds;
+}
 declare class WhatsAppClient {
     private logger;
     private msgRetryCounterCache;
@@ -28,6 +34,10 @@ declare class WhatsAppClient {
     private sock;
     private msgOption;
     constructor(customOptions?: CustomOptions);
+    connectToMongoDB(pathAuthFile: string, collectionName: string): Promise<{
+        client: MongoClient;
+        collection: Collection<AuthDocument>;
+    }>;
     initMongoAuth(pathAuthFile: string, collectionName: string): Promise<void>;
     initMultiFileAuth(pathAuthFile: string): Promise<void>;
     initMySQLAuth(mysqlConfig: MySQLConfig): Promise<void>;

@@ -3,11 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCommands = exports.getCommand = exports.loadCommands = exports.extractResponseTextContent = exports.getQuotedMedia = exports.streamToBuffer = exports.downloadQuotedMediaMessage = exports.downloadMediaMsg = exports.extractPollVoteMessage = exports.extractTimestamp = exports.extractTextContent = exports.extractQuotedMessage = exports.extractMimeType = exports.ConnMessage = exports.useMongoDBAuthState = exports.WhatsAppClient = void 0;
+exports.getAllCommands = exports.getCommand = exports.loadCommands = exports.extractResponseTextContent = exports.getQuotedMedia = exports.streamToBuffer = exports.downloadQuotedMediaMessage = exports.downloadMediaMsg = exports.extractPollVoteMessage = exports.extractTimestamp = exports.extractTextContent = exports.extractQuotedMessage = exports.extractMimeType = exports.ConnMessage = exports.WhatsAppClient = void 0;
 const sock_1 = __importDefault(require("./socket/sock"));
 exports.WhatsAppClient = sock_1.default;
-const MongoAuth_1 = __importDefault(require("./auth/MongoAuth"));
-exports.useMongoDBAuthState = MongoAuth_1.default;
 const getMimeType_1 = require("./message/getMimeType");
 Object.defineProperty(exports, "extractMimeType", { enumerable: true, get: function () { return getMimeType_1.extractMimeType; } });
 const getQuoted_1 = require("./message/getQuoted");

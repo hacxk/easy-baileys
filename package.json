@@ -1,6 +1,6 @@
 {
   "name": "easy-baileys",
-  "version": "1.2.0",
+  "version": "1.2.5",
   "description": "Tired of writing complex code for simple WhatsApp bots? This Node.js module simplifies bot creation, making it accessible to all levels of developers. Harness the power of @whiskeysockets/baileys without the hassle.",
   "main": "dist/js/index.js",
   "types": "dist/js/index.d.ts",
@@ -49,6 +49,7 @@
     "libphonenumber-js": "^1.11.4",
     "link-preview-js": "^3.0.5",
     "lodash.debounce": "^4.0.8",
+    "mongo-baileys": "^1.0.1",
     "mongodb": "^6.8.0",
     "mysql-baileys": "github:bobslavtriev/mysql-baileys",
     "node-fetch": "^3.3.2",
