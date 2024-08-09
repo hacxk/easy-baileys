@@ -110,12 +110,51 @@ class WhatsAppClient {
                 store === null || store === void 0 ? void 0 : store.bind(eventEmitter);
                 this.sock.ev.on('creds.update', this.saveCreds);
                 this.sock.ev.on('connection.update', this.handleConnectionUpdate);
+                const failedMessages = new Map();
+                const MAX_RETRIES = 3;
+                this.sock.ev.on("messages.upsert", (_a) => __awaiter(this, [_a], void 0, function* ({ messages }) {
+                    for (const msg of messages) {
+                        if (msg.key.fromMe && msg.status === 0) {
+                            const retryNode = this.createRetryNode(msg, failedMessages, MAX_RETRIES);
+                            if (retryNode) {
+                                try {
+                                    if (msg.key.remoteJid) {
+                                        yield this.sock.relayMessage(msg.key.remoteJid, retryNode, { messageId: retryNode.key.id });
+                                    }
+                                }
+                                catch (error) {
+                                    console.error(`Error retrying message ${msg.key.id}:`, error);
+                                }
+                            }
+                        }
+                    }
+                }));
             }
             catch (error) {
                 logger.error('Error initializing socket:', error);
                 throw error;
             }
         });
+    }
+    createRetryNode(msg, failedMessages, MAX_RETRIES) {
+        const messageId = msg.key.id;
+        let retryCount = failedMessages.get(messageId) || 0;
+        if (retryCount >= MAX_RETRIES) {
+            failedMessages.delete(messageId);
+            return null;
+        }
+        retryCount++;
+        failedMessages.set(messageId, retryCount);
+        return {
+            key: {
+                id: messageId,
+                remoteJid: msg.key.remoteJid,
+                participant: msg.key.participant,
+            },
+            message: msg.message,
+            messageTimestamp: msg.messageTimestamp,
+            status: msg.status,
+        };
     }
     getSocket() {
         return __awaiter(this, void 0, void 0, function* () {

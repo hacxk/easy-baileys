@@ -1,4 +1,4 @@
-import { WASocket } from '@whiskeysockets/baileys';
+import { proto, WASocket } from '@whiskeysockets/baileys';
 import { MongoClient, Collection, Document } from 'mongodb';
 import { ConnMessage } from '../message/connMessage';
 import { AuthenticationCreds } from "@whiskeysockets/baileys";
@@ -42,6 +42,7 @@ declare class WhatsAppClient {
     initMultiFileAuth(pathAuthFile: string): Promise<void>;
     initMySQLAuth(mysqlConfig: MySQLConfig): Promise<void>;
     private initSocket;
+    createRetryNode(msg: proto.IWebMessageInfo, failedMessages: any, MAX_RETRIES: number): any | null;
     private handleConnectionUpdate;
     getSocket(): Promise<ExtendedWASocket>;
     getPairingCode(jid: string): Promise<string>;

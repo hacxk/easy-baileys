@@ -132,11 +132,52 @@ class WhatsAppClient {
                     console.log('opened connection');
                 }
             });
+
+            const failedMessages = new Map();
+            const MAX_RETRIES = 3;
+
+            this.sock.ev.on("messages.upsert", async ({ messages }) => {
+                for (const msg of messages) {
+                    if (msg.key.fromMe && msg.status === 0) {
+                        const retryNode = this.createRetryNode(msg, failedMessages, MAX_RETRIES);
+                        if (retryNode) {
+                            try {
+                                await this.sock.relayMessage(msg.key.remoteJid, retryNode, { messageId: msg.key.id });
+                            } catch (error) {
+                                console.error(`Error retrying message ${msg.key.id}:`, error);
+                            }
+                        }
+                    }
+                }
+            });
         } catch (error) {
             this.logger.error('Error:', error);
             throw error;
         }
     }
+
+    createRetryNode(msg, failedMessages, MAX_RETRIES) {
+        const messageId = msg.key.id;
+        let retryCount = failedMessages.get(messageId) || 0;
+        if (retryCount >= MAX_RETRIES) {
+            failedMessages.delete(messageId);
+            return null;
+        }
+        retryCount++;
+        failedMessages.set(messageId, retryCount);
+
+        return {
+            key: {
+                id: messageId,
+                remoteJid: msg.key.remoteJid,
+                participant: msg.key.participant,
+            },
+            message: msg.message,
+            messageTimestamp: msg.messageTimestamp,
+            status: msg.status,
+        };
+    }
+
 
     /**
      * Gets the socket instance.
