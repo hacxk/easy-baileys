@@ -37,30 +37,34 @@ const { WhatsAppClient } = require('easy-baileys');
 const { WhatsAppClient } = require('easy-baileys');
 
 const customOptions = {
-  browser: ["Ubuntu", "Chrome", "20.0.04"],
-  printQRInTerminal: false, // Set to true for QR code in terminal
-  mobile: false,
+    browser: ["Ubuntu", "Chrome", "20.0.04"],
+    printQRInTerminal: true, // Set to true for QR code in terminal
+    mobile: false,
 };
 
-(async () => {
-  try {
-    // Initialize WhatsAppClient with MongoDB authentication
-    const clientMongo = await WhatsAppClient.createMongoAuth('MongoDBURLHERE', 'collectionname', customOptions);
-    const sockMongo = await clientMongo.getSocket();
+async function main() {
+    try {
+        // Initialize WhatsAppClient with MongoDB authentication
+        const clientMongo = await WhatsAppClient.create("mongo", 'YOUR MONGO DB URI', customOptions);
+        const sockMongo = await clientMongo.getSocket();
 
-    // Example event listener for incoming messages
-    sockMongo.ev.on("messages.upsert", async ({ messages }) => {
-      for (const m of messages) {
-        if (m.message?.conversation.toLowerCase() === 'hi') {
-          await sockMongo.reply(m, 'Hello! 👋');
-        }
-      }
-    });
+        // Example event listener for incoming messages
+        sockMongo.ev.on("messages.upsert", async ({ messages }) => {
+            for (const m of messages) {
+                console.log(m)
+                if (m.message?.conversation.toLowerCase() === 'hi') {
+                    await sockMongo.reply(m, 'Hello! 👋');
+                    sockMongo.sendImage()
+                }
+            }
+        });
 
-  } catch (error) {
-    console.error('Error initializing WhatsApp client with MongoDB authentication:', error.message);
-  }
-})();
+    } catch (error) {
+        console.error('Error initializing WhatsApp client with MongoDB authentication:', error.message);
+    }
+}
+
+main()
 ```
 
 ### 3. Creating a Client Instance with MySQL Authentication (+ Multiple Session ✅)
@@ -88,7 +92,7 @@ const customOptions = {
 (async () => {
   try {
     // Initialize WhatsAppClient with MySQL authentication
-    const client = await WhatsAppClient.createMySQLAuth(mysqlConfig, customOptions);
+    const client = await WhatsAppClient.create("mysql", mysqlConfig, customOptions);
     const sockMySQL = await client.getSocket();
 
     // Example event listener for incoming messages
@@ -120,7 +124,7 @@ const customOptions = {
 (async () => {
   try {
     // Initialize WhatsAppClient with MultiFile authentication
-    const clientMulti = await WhatsAppClient.createMultiAuth('./authFiles', customOptions);
+    const clientMulti = await WhatsAppClient.create("multi", './authFiles', customOptions);
     const sockMulti = await clientMulti.getSocket();
 
     // Example event listener for incoming messages

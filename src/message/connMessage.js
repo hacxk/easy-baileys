@@ -1,3 +1,5 @@
+const { proto } = require('@whiskeysockets/baileys')
+
 let fetch;
 
 /**
@@ -803,6 +805,23 @@ class connMessage {
                     selectableCount: 1
                 }
             });
+
+            // // Create options for the PollCreationMessage
+            // let options = [];
+            // pollOptions.forEach(optionText => {
+            //     options.push(proto.Message.PollCreationMessage.Option({
+            //         optionName: optionText
+            //     }));
+            // });
+
+
+            // await this.relayMessage(groupJid, proto.Message{
+            //     PollCreationMessage: proto.Message.PollCreationMessage{
+            //         name: name,
+            //         options: options
+            //         selectableCount: proto.Message
+            //     }
+            // })
         } catch (err) {
             throw new Error(`Error creating poll: ${err.message}`);
         }
