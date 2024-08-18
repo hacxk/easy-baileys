@@ -5,6 +5,5 @@ test.js
 .github
 test.ts
 tsconfig.json
-/src
-dist
+/dist
 /Client112.ts
