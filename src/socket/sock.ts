@@ -153,6 +153,18 @@ class WhatsAppClient {
 
             store?.bind(this.sock.ev);
 
+            // Binding ConnMessage methods to this.sock
+
+            const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.msgOption))
+
+                .filter(method => typeof this.msgOption[method] === 'function' && method !== 'constructor');
+
+            methods.forEach(method => {
+
+                this.sock[method] = this.msgOption[method].bind(this.sock);
+
+            });
+
             this.sock.ev.on('creds.update', this.saveCreds);
             this.sock.ev.on('connection.update', this.handleConnectionUpdate);
             this.sock.ev.on("messages.update", this.handleMessagesUpdate);

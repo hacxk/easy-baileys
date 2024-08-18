@@ -130,6 +130,12 @@ class WhatsAppClient {
                 const baseSock = (0, baileys_1.makeWASocket)(Object.assign(Object.assign({ auth: finalAuth }, restCustomOptions), { getMessage }));
                 this.sock = Object.assign(Object.assign(Object.assign({}, baseSock), this.msgOption), { store: store });
                 store === null || store === void 0 ? void 0 : store.bind(this.sock.ev);
+                // Binding ConnMessage methods to this.sock
+                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.msgOption))
+                    .filter(method => typeof this.msgOption[method] === 'function' && method !== 'constructor');
+                methods.forEach(method => {
+                    this.sock[method] = this.msgOption[method].bind(this.sock);
+                });
                 this.sock.ev.on('creds.update', this.saveCreds);
                 this.sock.ev.on('connection.update', this.handleConnectionUpdate);
                 this.sock.ev.on("messages.update", this.handleMessagesUpdate);
