@@ -1,20 +1,19 @@
 {
-    "compilerOptions": {
-      "outDir": "./dist/js",
-      "declaration": true,
-      "declarationMap": true,
-      "sourceMap": true,
-      "rootDir": "./src",
-      "module": "commonjs",
-      "target": "es6",
-      "strict": true,
-      "esModuleInterop": true
-    },
-    "include": [
-      "src/**/*.ts"
-    ],
-    "exclude": [
-      "node_modules"
-    ]
-  }
-  
+  "compilerOptions": {
+    "outDir": "./dist/js", // Output directory for JavaScript files
+    "declaration": true, // Generate declaration files (.d.ts)
+    "declarationMap": true, // Generate declaration maps
+    "sourceMap": true, // Generate source maps
+    "rootDir": "./src", // Root directory of TypeScript source files
+    "module": "commonjs", // Module system
+    "target": "es6", // Target ECMAScript version
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true // Enables emit interoperability between CommonJS and ES Modules
+  },
+  "include": [
+    "src/**/*.ts" // Include all TypeScript files in the src directory
+  ],
+  "exclude": [
+    "node_modules" // Exclude node_modules directory
+  ]
+}

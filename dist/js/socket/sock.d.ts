@@ -1,10 +1,27 @@
-import { proto, WASocket } from '@whiskeysockets/baileys';
-import { MongoClient, Collection, Document } from 'mongodb';
+import { makeInMemoryStore, WASocket, BaileysEventMap, BaileysEventEmitter, SocketConfig } from '@whiskeysockets/baileys';
+import { MongoClient, Document } from 'mongodb';
 import { ConnMessage } from '../message/connMessage';
-import { AuthenticationCreds } from "@whiskeysockets/baileys";
-interface ExtendedWASocket extends WASocket, ConnMessage {
+type VoteAggregation = {
+    name: string;
+    voters: string[];
+};
+interface ExtendedBaileysEventMap extends BaileysEventMap {
+    'poll.vote.update': VoteAggregation;
 }
-interface CustomOptions {
+type ExtendedBaileysEventEmitter = BaileysEventEmitter & {
+    emit: <T extends keyof ExtendedBaileysEventMap>(event: T, arg: ExtendedBaileysEventMap[T]) => boolean;
+    on: <T extends keyof ExtendedBaileysEventMap>(event: T, listener: (arg: ExtendedBaileysEventMap[T]) => void) => void;
+    process(handler: (events: Partial<BaileysEventMap>) => void | Promise<void>): () => void;
+    buffer(): void;
+    createBufferedFunction<A extends any[], T_1>(work: (...args: A) => Promise<T_1>): (...args: A) => Promise<T_1>;
+    flush(force?: boolean | undefined): boolean;
+    isBuffering(): boolean;
+};
+interface ExtendedWASocket extends WASocket, ConnMessage {
+    ev: ExtendedBaileysEventEmitter;
+    store: ReturnType<typeof makeInMemoryStore>;
+}
+interface CustomOptions extends Partial<SocketConfig> {
     browser?: [string, string, string];
     keepAliveIntervalMs?: number;
     downloadHistory?: boolean;
@@ -22,28 +39,26 @@ interface MySQLConfig {
 }
 interface AuthDocument extends Document {
     _id: string;
-    creds?: AuthenticationCreds;
+    creds?: any;
 }
 declare class WhatsAppClient {
     private logger;
-    private msgRetryCounterCache;
     private customOptions;
-    private pairingCode;
     private state;
     private saveCreds;
     private sock;
     private msgOption;
-    constructor(customOptions?: CustomOptions);
+    constructor(customOptions?: Partial<SocketConfig>);
     connectToMongoDB(pathAuthFile: string, collectionName: string): Promise<{
         client: MongoClient;
-        collection: Collection<AuthDocument>;
+        collection: import("mongodb").Collection<AuthDocument>;
     }>;
     initMongoAuth(pathAuthFile: string, collectionName: string): Promise<void>;
     initMultiFileAuth(pathAuthFile: string): Promise<void>;
     initMySQLAuth(mysqlConfig: MySQLConfig): Promise<void>;
     private initSocket;
-    createRetryNode(msg: proto.IWebMessageInfo, failedMessages: any, MAX_RETRIES: number): any | null;
     private handleConnectionUpdate;
+    private handleMessagesUpdate;
     getSocket(): Promise<ExtendedWASocket>;
     getPairingCode(jid: string): Promise<string>;
     static create(authType: 'mongo' | 'multi' | 'mysql', config: string | MySQLConfig, customOptions?: CustomOptions): Promise<WhatsAppClient>;

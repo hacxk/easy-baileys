@@ -8,24 +8,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const baileys_1 = require("@whiskeysockets/baileys");
 const pino_1 = __importDefault(require("pino"));
-const node_cache_1 = __importDefault(require("node-cache"));
 const mongodb_1 = require("mongodb");
 const mysql_baileys_1 = require("mysql-baileys");
 const mongo_baileys_1 = require("mongo-baileys");
 const connMessage_1 = require("../message/connMessage");
+// Configure logger
 const logger = (0, pino_1.default)({ level: process.env.LOG_LEVEL || 'info' });
+// Create and configure in-memory store
 const store = (0, baileys_1.makeInMemoryStore)({ logger });
 class WhatsAppClient {
     constructor(customOptions = {}) {
         this.logger = logger;
-        this.msgRetryCounterCache = new node_cache_1.default();
-        this.pairingCode = '';
         this.state = null;
         this.saveCreds = null;
         this.handleConnectionUpdate = (update) => {
@@ -35,7 +45,6 @@ class WhatsAppClient {
                 const shouldReconnect = ((_b = (_a = lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
                 logger.info('connection closed due to', lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error, ', reconnecting', shouldReconnect);
                 if (!shouldReconnect) {
-                    // this.initSocket();
                     logger.info('Connection closed. You are logged out.');
                 }
             }
@@ -43,8 +52,31 @@ class WhatsAppClient {
                 logger.info('opened connection');
             }
         };
-        this.customOptions = customOptions;
-        this.msgOption = new connMessage_1.ConnMessage(); // Initialize ConnMessage
+        this.handleMessagesUpdate = (updates) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            for (const update of updates) {
+                if (update.update.pollUpdates) {
+                    try {
+                        const pollCreation = yield ((_a = this.sock.store) === null || _a === void 0 ? void 0 : _a.loadMessage(update.key.remoteJid, update.key.id));
+                        if (pollCreation) {
+                            const voteAggregations = (0, baileys_1.getAggregateVotesInPollMessage)({
+                                message: pollCreation.message,
+                                pollUpdates: update.update.pollUpdates,
+                            });
+                            // Emit each aggregation individually
+                            voteAggregations.forEach(voteAggregation => {
+                                this.sock.ev.emit("poll.vote.update", voteAggregation);
+                            });
+                        }
+                    }
+                    catch (error) {
+                        logger.error("Error processing poll update:", error);
+                    }
+                }
+            }
+        });
+        this.customOptions = Object.assign(Object.assign({}, baileys_1.DEFAULT_CONNECTION_CONFIG), customOptions);
+        this.msgOption = new connMessage_1.ConnMessage();
     }
     connectToMongoDB(pathAuthFile, collectionName) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -85,7 +117,6 @@ class WhatsAppClient {
     }
     initSocket() {
         return __awaiter(this, void 0, void 0, function* () {
-            const signalKeyStore = (0, baileys_1.makeCacheableSignalKeyStore)(this.state.keys, logger);
             const getMessage = (key) => __awaiter(this, void 0, void 0, function* () {
                 if (store) {
                     const msg = yield store.loadMessage(key.remoteJid, key.id);
@@ -94,67 +125,20 @@ class WhatsAppClient {
                 return baileys_1.proto.Message.fromObject({});
             });
             try {
-                const baseSock = yield (0, baileys_1.makeWASocket)(Object.assign({ logger, printQRInTerminal: this.customOptions.printQRInTerminal || true, auth: {
-                        creds: this.state.creds,
-                        keys: signalKeyStore,
-                    }, msgRetryCounterCache: this.msgRetryCounterCache, generateHighQualityLinkPreview: true, getMessage }, this.customOptions));
-                // Extend the base socket with ConnMessage methods
-                this.sock = baseSock;
-                // Binding ConnMessage methods to this.sock
-                const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this.msgOption))
-                    .filter(method => typeof this.msgOption[method] === 'function' && method !== 'constructor');
-                methods.forEach(method => {
-                    this.sock[method] = this.msgOption[method].bind(this.sock);
-                });
-                const eventEmitter = this.sock.ev;
-                store === null || store === void 0 ? void 0 : store.bind(eventEmitter);
+                const _a = this.customOptions, { auth: customAuth } = _a, restCustomOptions = __rest(_a, ["auth"]);
+                const finalAuth = customAuth !== null && customAuth !== void 0 ? customAuth : this.state;
+                const baseSock = (0, baileys_1.makeWASocket)(Object.assign(Object.assign({ auth: finalAuth }, restCustomOptions), { getMessage }));
+                this.sock = Object.assign(Object.assign(Object.assign({}, baseSock), this.msgOption), { store: store });
+                store === null || store === void 0 ? void 0 : store.bind(this.sock.ev);
                 this.sock.ev.on('creds.update', this.saveCreds);
                 this.sock.ev.on('connection.update', this.handleConnectionUpdate);
-                const failedMessages = new Map();
-                const MAX_RETRIES = 3;
-                this.sock.ev.on("messages.upsert", (_a) => __awaiter(this, [_a], void 0, function* ({ messages }) {
-                    for (const msg of messages) {
-                        if (msg.key.fromMe && msg.status === 0) {
-                            const retryNode = this.createRetryNode(msg, failedMessages, MAX_RETRIES);
-                            if (retryNode) {
-                                try {
-                                    if (msg.key.remoteJid) {
-                                        yield this.sock.relayMessage(msg.key.remoteJid, retryNode, { messageId: retryNode.key.id });
-                                    }
-                                }
-                                catch (error) {
-                                    console.error(`Error retrying message ${msg.key.id}:`, error);
-                                }
-                            }
-                        }
-                    }
-                }));
+                this.sock.ev.on("messages.update", this.handleMessagesUpdate);
             }
             catch (error) {
                 logger.error('Error initializing socket:', error);
                 throw error;
             }
         });
-    }
-    createRetryNode(msg, failedMessages, MAX_RETRIES) {
-        const messageId = msg.key.id;
-        let retryCount = failedMessages.get(messageId) || 0;
-        if (retryCount >= MAX_RETRIES) {
-            failedMessages.delete(messageId);
-            return null;
-        }
-        retryCount++;
-        failedMessages.set(messageId, retryCount);
-        return {
-            key: {
-                id: messageId,
-                remoteJid: msg.key.remoteJid,
-                participant: msg.key.participant,
-            },
-            message: msg.message,
-            messageTimestamp: msg.messageTimestamp,
-            status: msg.status,
-        };
     }
     getSocket() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -178,8 +162,7 @@ class WhatsAppClient {
                 if (!parsedNumber.isValid()) {
                     throw new Error('Invalid phone number');
                 }
-                this.pairingCode = yield this.sock.requestPairingCode(jid);
-                return this.pairingCode;
+                return yield this.sock.requestPairingCode(jid);
             }
             catch (error) {
                 logger.error("Error getting pairing code:", error);
