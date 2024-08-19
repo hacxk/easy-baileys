@@ -1,1 +1,0 @@
-{"version":3,"file":"getTimestamp.d.ts","sourceRoot":"","sources":["../../../src/message/getTimestamp.ts"],"names":[],"mappings":"AAAA;;;;;;;;GAQG;AACH,iBAAe,gBAAgB,CAAC,OAAO,EAAE;IAAE,gBAAgB,CAAC,EAAE,MAAM,CAAC;IAAC,OAAO,CAAC,EAAE;QAAE,SAAS,CAAC,EAAE,MAAM,CAAA;KAAE,CAAA;CAAE,GAAG,OAAO,CAAC,MAAM,GAAG,IAAI,CAAC,CAQhI;AAED,OAAO,EAAE,gBAAgB,EAAE,CAAC"}

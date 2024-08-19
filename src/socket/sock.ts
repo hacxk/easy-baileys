@@ -11,7 +11,8 @@ import {
     AuthenticationState,
     SocketConfig,
     DEFAULT_CONNECTION_CONFIG,
-    WAMessageUpdate,
+    WAMessageUpdate, decryptPollVote,
+    WAMessage
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import { MongoClient, Document } from 'mongodb';
@@ -27,8 +28,10 @@ const store = makeInMemoryStore({ logger });
 
 // Define VoteAggregation type
 type VoteAggregation = {
-    name: string;
-    voters: string[];
+    pollTitle: string | null | undefined,
+    optionName: string;
+    voter: string | null;
+    pollCreationMessage: WAMessage
 };
 
 // Extend BaileysEventMap to include our custom event
@@ -198,11 +201,16 @@ class WhatsAppClient {
                             message: pollCreation.message as proto.IMessage,
                             pollUpdates: update.update.pollUpdates,
                         });
+                    
+                        const emit: VoteAggregation = {
+                            pollTitle: pollCreation.message?.pollCreationMessage?.name,
+                            optionName: voteAggregations[0].name, 
+                            voter: voteAggregations[0].voters.length > 0 ? voteAggregations[0].voters[0] : null, // Handle empty voters
+                            pollCreationMessage: pollCreation
+                        };
+                      
+                        this.sock.ev.emit("poll.vote.update", emit);
 
-                        // Emit each aggregation individually
-                        voteAggregations.forEach(voteAggregation => {
-                            this.sock.ev.emit("poll.vote.update", voteAggregation);
-                        });
                     }
                 } catch (error) {
                     logger.error("Error processing poll update:", error);

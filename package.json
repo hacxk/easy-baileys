@@ -1,6 +1,6 @@
 {
   "name": "easy-baileys",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "description": "Tired of writing complex code for simple WhatsApp bots? This Node.js module simplifies bot creation, making it accessible to all levels of developers. Harness the power of @whiskeysockets/baileys without the hassle.",
   "main": "dist/js/index.js",
   "types": "dist/js/index.d.ts",
