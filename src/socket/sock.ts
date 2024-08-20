@@ -26,12 +26,11 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 // Create and configure in-memory store
 const store = makeInMemoryStore({ logger });
 
-// Define VoteAggregation type
 type VoteAggregation = {
-    pollTitle: string | null | undefined,
+    pollTitle: string | null; // Removed undefined as it's redundant with null
     optionName: string;
-    voter: string | null;
-    pollCreationMessage: WAMessage
+    voter: string[] | null;
+    pollCreationMessage: WAMessage;
 };
 
 // Extend BaileysEventMap to include our custom event
@@ -201,16 +200,19 @@ class WhatsAppClient {
                             message: pollCreation.message as proto.IMessage,
                             pollUpdates: update.update.pollUpdates,
                         });
-                    
-                        const emit: VoteAggregation = {
-                            pollTitle: pollCreation.message?.pollCreationMessage?.name,
-                            optionName: voteAggregations[0].name, 
-                            voter: voteAggregations[0].voters.length > 0 ? voteAggregations[0].voters[0] : null, // Handle empty voters
-                            pollCreationMessage: pollCreation
-                        };
-                      
-                        this.sock.ev.emit("poll.vote.update", emit);
 
+                        // Emit each VoteAggregation individually
+                        for (const aggregation of voteAggregations) {
+                            const emitData: VoteAggregation = {
+                                pollTitle: pollCreation.message?.pollCreationMessage?.name || null,
+                                optionName: aggregation.name,
+                                voter: aggregation.voters || null,
+                                pollCreationMessage: pollCreation
+                            };
+
+                            // Use the extended event emitter to emit the custom event with a single VoteAggregation object
+                            (this.sock.ev as ExtendedBaileysEventEmitter).emit("poll.vote.update", emitData);
+                        }
                     }
                 } catch (error) {
                     logger.error("Error processing poll update:", error);
